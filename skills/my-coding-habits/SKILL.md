@@ -7,6 +7,8 @@ description: The owner's personal Angular and TypeScript coding habits and house
 
 These are defaults, not laws. Order of authority: the project's `AGENTS.md` / `CLAUDE.md`, then the lessons in the agent's memory, then this file. Only use an API if the project's Angular version supports it; if a habit needs a newer version, say so and use the closest older equivalent.
 
+The same rules live in the kit's root `AGENTS.md` for harnesses that do not load skills; keep the two in sync.
+
 ## TypeScript
 - Strict typing. Prefer inference when the type is obvious.
 - No `any`; use `unknown` and narrow it. Pair with the `typescript-safety` skill for the typecheck gate.

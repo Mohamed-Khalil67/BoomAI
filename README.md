@@ -93,6 +93,14 @@ It runs `npx -y @angular/cli mcp` and gives `get_best_practices`, `search_docume
 
 The `typescript-safety` skill is preloaded by `angular-dev`: strict compiler settings and `strictTemplates`, no `any`, validated API data, typed signal inputs, outputs and forms, and a typecheck gate before finishing.
 
+## Shared rules: `AGENTS.md`
+
+`AGENTS.md` at the repo root is the single source of truth for your house rules and a table of which skill or agent to use for each kind of task. `CLAUDE.md` and `GEMINI.md` only contain `@AGENTS.md`, so Claude Code and Gemini CLI follow it; Codex, Cursor, Copilot and Antigravity read `AGENTS.md` directly.
+
+A plugin's root files are not auto-loaded into your projects, so `/frontend-ai-kit:setup` offers to copy `AGENTS.md` into the project (or append it between marker comments if the project already has one) and to create `CLAUDE.md` with `@AGENTS.md`. Commit them so the team shares them. The rules in `AGENTS.md` and `skills/my-coding-habits/SKILL.md` must be kept in sync when you change either.
+
+Per-harness install steps (Claude Code, Gemini CLI, Cursor, Hermes, others) are in [docs/INSTALL-AGENTS-MD.md](docs/INSTALL-AGENTS-MD.md).
+
 ## Other tools (Cursor, Antigravity)
 
 This plugin format is for Claude Code. The skills in `skills/` follow the Agent Skills format and may be installable elsewhere with `npx skills add Mohamed-Khalil67/frontend-ai-kit-by-Mk`, but that is untested here. The agent uses Claude Code's subagent format and will not carry over. MCP servers must be added in each tool's own settings.
