@@ -95,11 +95,16 @@ The `typescript-safety` skill is preloaded by `angular-dev`: strict compiler set
 
 ## Shared rules: `AGENTS.md`
 
-`AGENTS.md` at the repo root is the single source of truth for your house rules and a table of which skill or agent to use for each kind of task. `CLAUDE.md` and `GEMINI.md` only contain `@AGENTS.md`, so Claude Code and Gemini CLI follow it; Codex, Cursor, Copilot and Antigravity read `AGENTS.md` directly.
+`AGENTS.md` is kept small because it is sent with every request: a few always-true rules and links to topic docs in [`docs/agents/`](docs/agents/) (Angular, TypeScript, accessibility, delivery), which the agent reads only when the task needs them. `my-coding-habits` points at the same docs, so each rule has one copy. `CLAUDE.md` and `GEMINI.md` import `AGENTS.md`.
 
-A plugin's root files are not auto-loaded into your projects, so `/frontend-ai-kit:setup` offers to copy `AGENTS.md` into the project (or append it between marker comments if the project already has one) and to create `CLAUDE.md` with `@AGENTS.md`. Commit them so the team shares them. The rules in `AGENTS.md` and `skills/my-coding-habits/SKILL.md` must be kept in sync when you change either.
+Install into any project (Node 18+, run in the project root, safe to re-run):
 
-Per-harness install steps (Claude Code, Gemini CLI, Cursor, Hermes, others) are in [docs/INSTALL-AGENTS-MD.md](docs/INSTALL-AGENTS-MD.md).
+```bash
+npx github:Mohamed-Khalil67/frontend-ai-kit-by-Mk --dry-run   # preview
+npx github:Mohamed-Khalil67/frontend-ai-kit-by-Mk             # install
+```
+
+It writes a short project header plus the kit block into `AGENTS.md` (or updates only the kit block in an existing one), copies `docs/agents/`, and makes `CLAUDE.md` a symlink to `AGENTS.md` (or an `@AGENTS.md` import). `/frontend-ai-kit:setup` runs the same script. Details, monorepos, Windows symlinks and per-harness notes: [docs/INSTALL-AGENTS-MD.md](docs/INSTALL-AGENTS-MD.md).
 
 ## Other tools (Cursor, Antigravity)
 

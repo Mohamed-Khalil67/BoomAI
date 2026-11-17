@@ -1,0 +1,9 @@
+{
+  "name": "frontend-ai-kit-by-mk",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Install the Frontend AI Kit AGENTS.md rules and docs into any project.",
+  "type": "module",
+  "bin": { "frontend-ai-kit": "scripts/init.mjs" },
+  "engines": { "node": ">=18" }
+}

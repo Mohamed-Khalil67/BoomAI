@@ -21,12 +21,11 @@ Ask with AskUserQuestion, one question:
 For `angular-dev`, ask whether to install the official Angular skills now, and separately whether to add the optional UI UX Pro Max design skill (group `design`: a pinned third-party skill with a searchable design database and a stdlib-only Python script the agent runs; needs Python 3). They come from the Angular team's public repo (`github.com/angular/skills`, listed in `refresh-framework-skills/sources.json`) and become instructions Claude follows. If the user agrees, follow the `refresh-framework-skills` skill for group `angular` (and `design` if they chose it) and use `--yes` only because they agreed. If they decline, say the agent will ask again on first use. For "skills only", skip this step.
 
 ## Step 4: install the shared rules
-The kit ships one canonical `AGENTS.md` (house rules plus a skill-routing table) so every harness in the project reaches the same rules. The source is `${CLAUDE_PLUGIN_ROOT}/AGENTS.md` (the file next to the plugin's `skills/` folder). Ask once whether to install it, then:
-- No `AGENTS.md` in the project: copy it to the project root.
-- Project already has `AGENTS.md`: show the user the plan and, if they agree, append the kit's file under a `<!-- frontend-ai-kit:start -->` / `<!-- frontend-ai-kit:end -->` marker pair so it can be replaced later. Never overwrite their content.
-- Claude Code reads `CLAUDE.md`, not `AGENTS.md`: if there is no `CLAUDE.md`, create it containing only `@AGENTS.md`; if one exists, offer to add that line at the top.
-- Offer `GEMINI.md` with `@AGENTS.md` only if they use Gemini CLI. Codex, Cursor, Copilot and Antigravity read `AGENTS.md` directly.
-Tell the user to commit these files so the whole team gets them (you do not commit).
+The kit ships a small `AGENTS.md` (sent with every request) that links to topic docs in `docs/agents/` (read only when needed). One script installs both into the project and is safe to re-run. Ask once whether to install, then:
+1. Preview: `node "${CLAUDE_PLUGIN_ROOT}/scripts/init.mjs" --dry-run` in the project root. Show the user the list it prints.
+2. If they agree, run it again without `--dry-run`. Add `--gemini` only if they use Gemini CLI. Codex, Cursor, Copilot and Antigravity read `AGENTS.md` directly.
+What it does: creates `AGENTS.md` with a short project header (description, package manager, non-standard scripts, top-level layout) plus the kit block between `<!-- frontend-ai-kit:start -->` / `<!-- frontend-ai-kit:end -->` markers, or appends/updates only that block in an existing `AGENTS.md`; copies `docs/agents/*.md` without touching files the user wrote; makes `CLAUDE.md` a symlink to `AGENTS.md` (falls back to a one-line `@AGENTS.md` import, or prepends that line to an existing `CLAUDE.md`). If the team clones on Windows without `core.symlinks`, suggest `--claude=import`.
+If the description in the header is a placeholder, ask the user for one or two sentences and fill it in. Tell the user to commit `AGENTS.md`, `CLAUDE.md` and `docs/agents/` (you do not commit).
 
 ## Step 5: check tools
 List which of these tools you can see in this session and which you cannot, without guessing:
