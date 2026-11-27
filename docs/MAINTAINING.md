@@ -27,6 +27,7 @@ The owner's personal habits are in `skills/kit/my-coding-habits/SKILL.md`. It po
 | `skills/kit/refresh-framework-skills/sources.json` | Upstream skill sources, with pinned commits where required | Maintainers |
 | `agents/*.md` | Subagents (lead, Angular builder, stylist, motion, a11y, perf) | Claude Code |
 | `scripts/init.mjs` | Installer. Run with `--dry-run` first. | Humans and setup skill |
+| `scripts/setup.mjs` | One-command project setup: pulls the kit, installs the plugins with the `claude` CLI, then runs `init.mjs`. Run with `--dry-run` first. | Humans |
 | `evals/README.md` | Manual test scenarios | Maintainers |
 | `.claude-plugin/plugin.json`, `package.json` | Versions. Keep them equal. | Maintainers |
 

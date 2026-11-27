@@ -28,6 +28,30 @@ A Claude Code plugin for Angular frontend work: a lead agent that delegates to s
 
 Three steps: once per machine, once per project, and again whenever the kit changes. Needs Git and Node 18+.
 
+### Quick setup: one script
+
+Clone the kit once (step 1), then run this in each project root:
+
+```bash
+node C:\Workspace\github\frontend-ai-kit-by-Mk\scripts\setup.mjs
+```
+
+It runs every command from steps 2 and 3 for you, in order:
+
+1. `git pull` in the kit clone (skip with `--no-pull`).
+2. Claude Code: registers the clone as the `frontend-ai-kit-by-mk` marketplace if it is missing, installs `frontend-ai-kit` for this project only (or updates it if it is already there), and adds the `angular-mcp` add-on when `package.json` has `@angular/core`.
+3. Runs `init.mjs` to write `AGENTS.md`, `CLAUDE.md`, `docs/agents/` and, for tools other than Claude Code, `.agents/skills/`.
+4. Prints what is left: restart Claude Code, commit `.claude/settings.json` and `AGENTS.md`, sign in to Figma, say "set up the kit".
+
+Options:
+- `--tools=claude,codex,gemini,cursor,copilot,opencode`: the tools you use here. Default: `claude` if it is installed. Any tool other than Claude Code makes it copy the skills into `.agents/skills/`; `gemini` also creates `GEMINI.md`.
+- `--skills=agents|claude|both|none`: override where the skills are copied.
+- `--dry-run`: print the commands without running them.
+
+Safe to re-run whenever the kit changes: each step is skipped or updated when it is already done. Sign-ins (Figma through `/mcp`) and the session restart stay manual.
+
+The steps below are what the script does, if you prefer to run them by hand.
+
 ### 1. Once per machine
 
 Clone the kit over SSH (or HTTPS) to a fixed folder:
@@ -57,7 +81,7 @@ claude plugin install frontend-ai-kit@frontend-ai-kit-by-mk --scope project
 node C:\Workspace\github\frontend-ai-kit-by-Mk\scripts\init.mjs
 ```
 
-The first line turns the kit on for this project only, in `.claude/settings.json`; commit that file so it stays on. The second writes `AGENTS.md`, `CLAUDE.md` and `docs/agents/`. In Angular projects also run `claude plugin install angular-mcp@frontend-ai-kit-by-mk --scope project`. Restart the session, then optionally run `/frontend-ai-kit:setup` for the guided checks (Angular version, official Angular skills, MCP servers).
+The first line turns the kit on for this project only, in `.claude/settings.json`; commit that file so it stays on. The second writes `AGENTS.md`, `CLAUDE.md` and `docs/agents/`. In Angular projects also run `claude plugin install angular-mcp@frontend-ai-kit-by-mk --scope project`. Restart the session, then say "set up the kit" (or type `/frontend-ai-kit:setup`) for the guided checks (Angular version, official Angular skills, MCP servers).
 
 **Codex, Gemini CLI, Cursor, Copilot, OpenCode and other tools:**
 
@@ -86,7 +110,9 @@ Every skill's `description` says when it applies, so a tool with skill support p
 | Tools that read `.agents/skills/` | Yes, where the tool supports Agent Skills | The tool's own syntax (for example `/css-styling` or `$css-styling`), or "use the css-styling skill" |
 | Tools without skill support | Through `AGENTS.md`: it tells the agent to read the matching `.agents/skills/<name>/SKILL.md` first | "use the css-styling skill" |
 
-`setup` is Claude Code only and runs only when you type `/frontend-ai-kit:setup`. Only Claude Code has been tested; check your tool's docs for the folder it reads skills from.
+`setup` is automatic too, in every project where the plugin is on: Claude starts it when you ask in plain words ("set up the kit", "what do I need", "help me get started"), or you type `/frontend-ai-kit:setup`. It never runs by itself at session start, and it asks before writing any file. It is Claude Code only, so the installer does not copy it into `.agents/skills/`. To make it manual-only again, add `disable-model-invocation: true` to its frontmatter in `skills/kit/setup/SKILL.md`.
+
+Plugin skills cannot be switched between automatic and manual per project; the frontmatter applies to every project that enables the plugin. Only Claude Code has been tested; check your tool's docs for the folder it reads skills from.
 
 ## Use
 
