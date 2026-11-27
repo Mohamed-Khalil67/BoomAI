@@ -1,0 +1,7 @@
+{
+  "_comment": "MCP servers this pack adds to the project's .mcp.json with --mcp. A server listed in onlyWith is added only when package.json depends on that package.",
+  "mcpServers": {
+    "context7": { "type": "http", "url": "https://mcp.context7.com/mcp" }
+  },
+  "onlyWith": {}
+}

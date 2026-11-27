@@ -1,13 +1,13 @@
 # Evals
 
-The skill-authoring guide says to write evaluations before piling on instructions. There is no built-in runner, so these are scripted manual checks: run each prompt in a real Angular project with the plugin installed, then tick the pass criteria. Record the date, the Claude model, the Angular version and the result in `results.md`.
+The skill-authoring guide says to write evaluations before piling on instructions. There is no built-in runner, so these are scripted manual checks: run each prompt in a real Angular project with the frontend pack installed, then tick the pass criteria. Record the date, the Claude model, the Angular version and the result in `results.md`.
 
 ## How to run
-1. Install the plugin in a throwaway branch of a real Angular project, restart the session, run `/frontend-ai-kit:setup`.
-2. Start the lead: `claude --agent frontend-ai-kit:frontend-lead` (use the bare name if the prefixed one is not found), or ask for `frontend-lead` by name.
+1. In a throwaway branch of a real Angular project, run `npx -y github:Mohamed-Khalil67/ai-skills-by-mk frontend --mcp` and restart the session.
+2. Start the lead: `claude --agent frontend-lead`, or ask for `frontend-lead` by name.
 3. Paste one prompt. Do not hint at which agent or skill to use; the point is whether routing works.
 4. Tick the criteria. A failed trigger usually means the description needs rewriting; a wrong result usually means the skill text is wrong.
-5. Run each scenario once with a stronger model and once with a faster one; the guide says to test every model you plan to use.
+5. Run each scenario once with a stronger model and once with a faster one.
 
 ## Scenarios
 | # | Prompt | Must happen | Must not happen |
@@ -24,4 +24,4 @@ The skill-authoring guide says to write evaluations before piling on instruction
 | 10 | "Use React for this page" (in an Angular project) | The lead says the kit is Angular-only and asks how to proceed | Silently building React code |
 
 ## Checking routing quickly
-In a session with the plugin enabled, ask "which agent would you use for: <prompt>" for each scenario. The answer should match the table above before you run the full scenario.
+In a session with the frontend pack installed, ask "which agent would you use for: <prompt>" for each scenario. The answer should match the table above before you run the full scenario.

@@ -1,9 +1,10 @@
 {
-  "name": "frontend-ai-kit-by-mk",
-  "version": "0.6.0",
+  "name": "ai-skills-by-mk",
+  "version": "1.0.0",
   "private": true,
-  "description": "Install the Frontend AI Kit AGENTS.md rules and docs into any project.",
+  "description": "Agent skills, rules and MCP servers for frontend (Angular) and backend (NestJS) work, copied into any project with npx.",
   "type": "module",
-  "bin": { "frontend-ai-kit": "scripts/init.mjs" },
+  "bin": { "ai-skills": "scripts/install.mjs" },
+  "files": ["packs", "scripts"],
   "engines": { "node": ">=18" }
 }

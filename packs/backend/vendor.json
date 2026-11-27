@@ -1,0 +1,41 @@
+{
+  "_comment": "Third-party skills copied into this pack, pinned to a reviewed commit. To update one: read the upstream diff since the pinned commit, copy the folder again, re-apply the local changes listed here, then bump the commit.",
+  "skills": [
+    {
+      "name": "nestjs-best-practices",
+      "into": "skills/nestjs/nestjs-best-practices",
+      "repo": "https://github.com/Kadajett/agent-nestjs-skills",
+      "path": "skills/nestjs-best-practices",
+      "commit": "3986e0cede33958e000f959031cbee0cd83c2941",
+      "licence": "MIT (stated in the SKILL.md frontmatter; no LICENSE file upstream, see NOTICE.md)",
+      "localChanges": ["rules/micro-use-patterns.md: toPromise() replaced by firstValueFrom()", "NOTICE.md added"]
+    },
+    {
+      "name": "supabase-postgres-best-practices",
+      "into": "skills/database/supabase-postgres-best-practices",
+      "repo": "https://github.com/supabase/agent-skills",
+      "path": "skills/supabase-postgres-best-practices",
+      "commit": "c9be0e931b7930f7d02126d04774d904c381e7d7",
+      "licence": "MIT",
+      "localChanges": ["SKILL.md description shortened so it triggers only on Postgres work", "LICENSE copied from the repo root"]
+    },
+    {
+      "name": "postgresql-table-design",
+      "into": "skills/database/postgresql-table-design",
+      "repo": "https://github.com/wshobson/agents",
+      "path": "plugins/database-design/skills/postgresql-table-design",
+      "commit": "c96b5f6552dba32e4492307493ee613581430715",
+      "licence": "MIT",
+      "localChanges": ["LICENSE copied from the repo root"]
+    },
+    {
+      "name": "security-review",
+      "into": "skills/security/security-review",
+      "repo": "https://github.com/getsentry/skills",
+      "path": "skills/security-review",
+      "commit": "a582c51ee29d0f35e6ac321340796f77d43da733",
+      "licence": "CC BY-SA 4.0 for this skill (its own LICENSE file, OWASP-derived). Share-alike: changes to these files stay CC BY-SA.",
+      "localChanges": []
+    }
+  ]
+}
