@@ -29,10 +29,14 @@ Every skill is `packs/<pack>/skills/<category>/<name>/SKILL.md`. Each category f
   - Security ([index](packs/backend/skills/security/AGENTS.md)): [auth-jwt](packs/backend/skills/security/auth-jwt/SKILL.md), [security-review](packs/backend/skills/security/security-review/SKILL.md)
   - Testing ([index](packs/backend/skills/testing/AGENTS.md)): [nest-testing](packs/backend/skills/testing/nest-testing/SKILL.md)
 
-## Installer
-[scripts/install.mjs](scripts/install.mjs) (the package `bin`). It finds packs and skills by scanning folders, so a new skill or category needs no code change.
+## Installer and checker
+[scripts/install.mjs](scripts/install.mjs) (the package `bin`) finds packs and skills by scanning folders, so a new skill or category needs no code change. [scripts/check.mjs](scripts/check.mjs) verifies every skill is well-formed and linked from all four indexes.
+
+## Adding a skill
+Create `packs/<pack>/skills/<category>/<name>/SKILL.md`, link it from the category `AGENTS.md`, the pack's `skills/AGENTS.md`, the pack's `AGENTS.md` block and this file, then run `node scripts/check.mjs`. Full steps, a template and the link formats: [README.md](README.md#adding-a-new-skill-install-it-index-it-reference-it).
 
 ## Always
 - Never commit or push unless explicitly asked.
 - Do not add a third-party skill, MCP server or dependency without asking the owner; pin vendored skills in the pack's `vendor.json`.
 - Kit content must work in any project; nothing project-specific.
+- Run `node scripts/check.mjs` before finishing any change to skills or indexes; it must print `ok`.

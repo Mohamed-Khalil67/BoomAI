@@ -6,5 +6,6 @@
   "type": "module",
   "bin": { "boomai": "scripts/install.mjs" },
   "files": ["packs", "scripts"],
+  "scripts": { "check": "node scripts/check.mjs" },
   "engines": { "node": ">=18" }
 }

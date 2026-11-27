@@ -10,9 +10,11 @@ Read by agents and people working on this repo. Not copied into projects.
 5. **MCP** (`packs/<pack>/mcp.json`): merged into `.mcp.json` with `--mcp`. `onlyWith` limits a server to projects that depend on a package.
 
 ## Adding a skill
-1. Pick the pack and category; create `packs/<pack>/skills/<category>/<name>/SKILL.md` with `name` (same as the folder) and `description` frontmatter. The description decides when the skill triggers: say what it does and the phrases that should load it. Put long material in `references/*.md` and link it.
-2. Add a row to the category's `AGENTS.md`, the pack's `skills/AGENTS.md` map, the skill line in `packs/<pack>/AGENTS.md` (as `[name](skills/<category>/<name>/SKILL.md)`, which the installer rewrites to the project path), the repo map in the root `AGENTS.md`, and the pack table in `README.md`.
-3. Scripts inside a skill: state the runtime it needs, and keep paths relative to the skill folder.
+The full walkthrough with a template and the exact link format for each index is in the README, section "Adding a new skill". In short:
+1. Create `packs/<pack>/skills/<category>/<name>/SKILL.md` with `name` (same as the folder, unique across packs) and `description` (what it does plus the phrases that should load it, max 1024 characters). Long material goes in `references/*.md`.
+2. Link it from four indexes: the category `AGENTS.md`, the pack's `skills/AGENTS.md`, the pack's `AGENTS.md` block (as `skills/<category>/<name>/SKILL.md`; the installer rewrites it to the project path), and the repo-root `AGENTS.md` (as `packs/<pack>/skills/<category>/<name>/SKILL.md`). Add it to the README pack table too.
+3. Run `node scripts/check.mjs`. It must print `ok` before you commit.
+4. Scripts inside a skill: state the runtime they need and keep paths relative to the skill folder.
 
 ## Vendoring a third-party skill
 - Only with a licence that allows copying. Read every file before adding it: skills become instructions agents follow.
@@ -27,7 +29,7 @@ Create `packs/<name>/` with `AGENTS.md`, `skills/`, optionally `docs/agents/`, `
 
 ## Releasing
 1. Bump `version` in `package.json`.
-2. `node --check scripts/install.mjs`.
+2. `node --check scripts/install.mjs` and `node scripts/check.mjs`.
 3. Run `node scripts/install.mjs <pack> <empty-folder> --mcp` for each pack and for `all`, then re-run to confirm nothing changes; check that `AGENTS.md` links all resolve (the installer prints it).
 4. Run it on a project with its own `AGENTS.md`, `docs/agents/` files and skills, and confirm they are kept.
 5. Do not commit or push unless the owner asks.

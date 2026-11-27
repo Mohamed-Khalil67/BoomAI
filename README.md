@@ -163,5 +163,48 @@ This was tested by adding a `queues` category to backend and a whole `mobile` pa
 
 Step-by-step checklists: [docs/MAINTAINING.md](docs/MAINTAINING.md). Repo map with every link: [AGENTS.md](AGENTS.md).
 
+## Adding a new skill: install it, index it, reference it
+
+A skill only reaches AI agents if it is **indexed**: linked from four `AGENTS.md` files, so an agent can navigate from the root down to it, and so the installer writes the link into a project's `AGENTS.md`. `node scripts/check.mjs` fails until all four exist.
+
+### 1. Create the skill
+`packs/<pack>/skills/<category>/<skill>/SKILL.md` (pick the pack and category; both may be new):
+
+```markdown
+---
+name: bullmq-basics            # exactly the folder name, unique across ALL packs
+description: Adds background jobs with BullMQ in NestJS. Use when the user says add a queue, background job, retry, or scheduled task.   # what it does + the phrases that should load it, max 1024 characters
+---
+
+# BullMQ basics
+Instructions the agent follows. Keep it short; put long material in `references/<topic>.md` next to SKILL.md and link it.
+```
+
+The `description` is what tools match against the user's request, so write the trigger phrases into it. Paths inside a skill stay relative to its own folder.
+
+### 2. Index it in four places
+Each file links the skill by a **relative path from that file**. With `pack = backend`, `category = queues`, `skill = bullmq-basics`:
+
+| # | File | What to add | Link format |
+|---|---|---|---|
+| 1 | `packs/backend/skills/queues/AGENTS.md` (the category index; create it for a new category) | A table row: ``\| [`bullmq-basics`](bullmq-basics/SKILL.md) \| one-line description \|`` | relative to the category folder |
+| 2 | `packs/backend/skills/AGENTS.md` (the pack's skills map) | The skill in its category row; a new category gets a whole row linking `queues/AGENTS.md` | `queues/bullmq-basics/SKILL.md` |
+| 3 | `packs/backend/AGENTS.md` (the block copied into every project) | A bullet in the Skills list: `- Queues: [bullmq-basics](skills/queues/bullmq-basics/SKILL.md)` | `skills/<category>/<skill>/SKILL.md`. The installer rewrites it to the project's skill folder |
+| 4 | `AGENTS.md` at the repo root (the map for agents working on this repo) | `  - Queues ([index](packs/backend/skills/queues/AGENTS.md)): [bullmq-basics](packs/backend/skills/queues/bullmq-basics/SKILL.md)` | `packs/<pack>/skills/<category>/<skill>/SKILL.md` |
+
+Also add it to the pack table in this README. If the pack's `AGENTS.md` skill bullet was the only place a trigger is stated, remember it stays short: it names skills, it does not explain them.
+
+### 3. Check
+```bash
+node scripts/check.mjs
+```
+It verifies that `name` equals the folder, `description` exists and fits, the name is unique across packs, the skill is linked from all four indexes, every link resolves, and every `vendor.json` entry has a full commit and a licence. Run it before every commit.
+
+### 4. Get it into projects
+Commit and push, then re-run the installer in each project (the same `npx -y github:Mohamed-Khalil67/BoomAI <pack>` command). It copies the new skill to `.agents/skills/<skill>/` and `.claude/skills/<skill>/` and rewrites the project's `AGENTS.md` block so the link points at the project's copy, for example `- Queues: [bullmq-basics](.agents/skills/bullmq-basics/SKILL.md)`. To try it first without pushing, run `node scripts/install.mjs <pack> <project-folder>` from your local clone.
+
+### A third-party skill
+Same four indexes, plus: copy the folder at one commit, keep its licence file (or add a `NOTICE.md` when the licence is only in its frontmatter), and add an entry to the pack's `vendor.json` with `name`, `into`, `repo`, `path`, the full 40-character `commit`, `licence` and every `localChanges`. Read every file first; a skill is instructions an agent will follow. The check enforces the `vendor.json` fields.
+
 ## Licence
 The repo is public, but no licence is set for its own content yet, so others may read and install it but have no rights to reuse it. The vendored skills keep their own licences (see the packs' `vendor.json`).
