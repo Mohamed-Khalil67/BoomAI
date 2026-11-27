@@ -1,7 +1,6 @@
 ---
 name: setup
 description: Guided first-time setup for Frontend AI Kit by MK in the current Angular project - confirms the Angular version and commands, asks whether to use the angular-dev agent or the general skills only, offers to install the official Angular skills, checks which MCP servers are connected, and lists what the user still needs to do. Use right after installing the plugin, or when the user says set up the kit, should I use angular-dev, what do I need, or help me get started.
-disable-model-invocation: true
 ---
 
 # Frontend AI Kit setup
