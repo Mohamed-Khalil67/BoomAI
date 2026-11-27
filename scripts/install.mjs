@@ -30,7 +30,7 @@ const args = process.argv.slice(2);
 const flag = (n) => args.includes(`--${n}`);
 const opt = (n, d) => { const a = args.find((x) => x.startsWith(`--${n}=`)); return a ? a.slice(n.length + 3) : d; };
 const positional = args.filter((a) => !a.startsWith('--'));
-function fail(msg) { console.error(`ai-skills: ${msg}\n\n${USAGE}`); process.exit(1); }
+function fail(msg) { console.error(`boomai: ${msg}\n\n${USAGE}`); process.exit(1); }
 
 // Skills of a pack: packs/<pack>/skills/<category>/<name>/SKILL.md, flattened to <name>.
 function packSkills(pack) {
