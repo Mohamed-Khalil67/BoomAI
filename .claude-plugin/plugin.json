@@ -1,7 +1,7 @@
 {
   "name": "frontend-ai-kit",
   "displayName": "Frontend AI Kit by MK",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Angular developer agent, frontend skills (CSS, animations, advanced animations, site replication, TypeScript safety) and MCP servers for design-to-code and browser verification.",
   "author": {
     "name": "MK"

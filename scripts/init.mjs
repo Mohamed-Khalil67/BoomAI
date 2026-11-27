@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Frontend AI Kit by MK: install the shared AGENTS.md rules into any project.
-// Usage: node scripts/init.mjs [projectDir] [--dry-run] [--gemini] [--claude=symlink|import|skip] [--skills=agents|claude|both|none]
+// Usage: node scripts/init.mjs [projectDir] [--dry-run] [--gemini] [--claude=symlink|import|skip] [--skills=both|agents|claude|none] [--mcp]
 // Safe to re-run: it updates the kit block, the kit's docs and the kit's skills, and never overwrites your own content.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,15 +16,19 @@ const args = process.argv.slice(2);
 const flag = (n) => args.includes(`--${n}`);
 const opt = (n, d) => (args.find((a) => a.startsWith(`--${n}=`)) || `=${d}`).split('=')[1];
 if (flag('help') || flag('h')) {
-  console.log('Usage: frontend-ai-kit [projectDir] [--dry-run] [--gemini] [--claude=symlink|import|skip] [--skills=agents|claude|both|none]');
+  console.log('Usage: frontend-ai-kit [projectDir] [--dry-run] [--gemini] [--claude=symlink|import|skip] [--skills=both|agents|claude|none] [--mcp]');
   process.exit(0);
 }
 const DRY = flag('dry-run');
 const CLAUDE_MODE = opt('claude', 'symlink');
-const SKILLS_MODE = opt('skills', 'agents');
+// Default both: .agents/skills for Codex, Cursor, Gemini CLI, Copilot and others, .claude/skills for Claude Code,
+// so the project works in whichever tool opens it.
+const SKILLS_MODE = opt('skills', 'both');
 const target = path.resolve(args.find((a) => !a.startsWith('--')) || process.cwd());
 if (!['symlink', 'import', 'skip'].includes(CLAUDE_MODE)) fail(`--claude must be symlink, import or skip`);
-if (!['agents', 'claude', 'both', 'none'].includes(SKILLS_MODE)) fail(`--skills must be agents, claude, both or none`);
+if (!['agents', 'claude', 'both', 'none'].includes(SKILLS_MODE)) fail(`--skills must be both, agents, claude or none`);
+const MCP = flag('mcp');
+const MCP_SKIP = new Set((opt('mcp-skip', '') || '').split(',').filter(Boolean));
 if (!fs.existsSync(target) || !fs.statSync(target).isDirectory()) fail(`Not a folder: ${target}`);
 if (path.resolve(target) === KIT) fail('Run this inside your project, not inside the kit itself.');
 
@@ -59,7 +63,27 @@ function projectHeader() {
 }
 
 // 2. AGENTS.md: replace the kit block if present, otherwise append it; create with a project header if missing.
-const kitRules = fs.readFileSync(path.join(KIT, 'AGENTS.md'), 'utf8').trim();
+// Skill links in the kit's AGENTS.md point at skills/<category>/<name>/SKILL.md, which only exists in the kit repo.
+// Point them at the folder the skills are copied to here; with no copy (Claude Code plugin), keep the name only.
+// Unlinked names (the official Angular skills) get a link when the project already has that skill.
+const SKILL_DIRS = { agents: '.agents/skills', claude: '.claude/skills', both: '.agents/skills', none: null };
+const skillDest = SKILL_DIRS[SKILLS_MODE];
+function linkSkills(text) {
+  const [head, rest] = text.split(/(?=^## Skills$)/m);
+  if (!rest) return text;
+  const end = rest.slice(3).search(/^## /m);
+  let section = end === -1 ? rest : rest.slice(0, end + 3);
+  section = section.replace(/\[([^\]]+)\]\(skills\/[^/)]+\/([^/)]+)\/SKILL\.md\)/g, (m, label, name) =>
+    skillDest && name !== 'setup' ? `[${label}](${skillDest}/${name}/SKILL.md)` : `\`${label}\``);
+  section = section.replace(/^(- [^:\n]+:.*)$/gm, (line) => line.replace(/`([a-z0-9-]+)`/g, (m, name) => {
+    const found = [...new Set([skillDest, '.agents/skills', '.claude/skills'].filter(Boolean))].find((d) => fs.existsSync(path.join(target, d, name, 'SKILL.md')));
+    return found ? `[${name}](${found}/${name}/SKILL.md)` : m;
+  }));
+  // Agents copied into .claude/agents/ have no plugin prefix.
+  if (SKILLS_MODE === 'claude' || SKILLS_MODE === 'both') section = section.replaceAll('frontend-ai-kit:frontend-lead', 'frontend-lead');
+  return head + section + (end === -1 ? '' : rest.slice(end + 3));
+}
+const kitRules = linkSkills(fs.readFileSync(path.join(KIT, 'AGENTS.md'), 'utf8').trim());
 const block = `${START}\n${kitRules}\n${END}\n`;
 const agentsFile = path.join(target, 'AGENTS.md');
 let agents;
@@ -149,15 +173,64 @@ function installSkills(base) {
 if (SKILLS_MODE === 'agents' || SKILLS_MODE === 'both') installSkills(path.join('.agents', 'skills'));
 if (SKILLS_MODE === 'claude' || SKILLS_MODE === 'both') installSkills(path.join('.claude', 'skills'));
 
+// 5b. With skills in .claude/skills, also copy the kit's agents into .claude/agents so they work without the plugin.
+// The agents preload skills by plain name, which matches the copied folders. Same lock-file rule as the skills.
+if (SKILLS_MODE === 'claude' || SKILLS_MODE === 'both') {
+  const dest = path.join(target, '.claude', 'agents');
+  const lockFile = path.join(dest, '.frontend-ai-kit-agents.json');
+  const owned = new Set(fs.existsSync(lockFile) ? JSON.parse(fs.readFileSync(lockFile, 'utf8')).agents : []);
+  const kitAgents = fs.readdirSync(path.join(KIT, 'agents')).filter((f) => f.endsWith('.md'));
+  const installed = [];
+  for (const f of kitAgents) {
+    const to = path.join(dest, f);
+    if (fs.existsSync(to) && !owned.has(f)) { note(`skipped ${rel(to)} (yours, not the kit's)`); continue; }
+    write(to, fs.readFileSync(path.join(KIT, 'agents', f), 'utf8'));
+    installed.push(f);
+  }
+  for (const f of owned) {
+    if (!kitAgents.includes(f)) { if (!DRY) fs.rmSync(path.join(dest, f), { force: true }); note(`removed ${rel(path.join(dest, f))} (no longer in the kit)`); }
+  }
+  write(lockFile, JSON.stringify({ note: 'Agents installed by frontend-ai-kit. Re-running the installer replaces them.', agents: installed }, null, 2) + '\n');
+  note(`${DRY ? 'will install' : 'installed'} ${installed.length} agents in ${rel(dest)}/`);
+}
+
+// 5c. --mcp: add the kit's MCP servers to .mcp.json (Claude Code's project file), run with npx.
+// Never changes a server already there; skips the Angular CLI server when one already runs @angular/cli.
+if (MCP) {
+  const readJson = (f) => { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch { return {}; } };
+  const mcpFile = path.join(target, '.mcp.json');
+  const mcp = readJson(mcpFile);
+  mcp.mcpServers ??= {};
+  let pkg = {};
+  try { pkg = JSON.parse(fs.readFileSync(path.join(target, 'package.json'), 'utf8')); } catch {}
+  const angular = Boolean({ ...pkg.dependencies, ...pkg.devDependencies }['@angular/core']);
+  const servers = { ...readJson(path.join(KIT, '.mcp.json')).mcpServers };
+  if (angular) Object.assign(servers, readJson(path.join(KIT, 'plugins', 'angular-mcp', '.mcp.json')).mcpServers);
+  const existing = JSON.stringify(mcp.mcpServers);
+  const added = [];
+  for (const [name, def] of Object.entries(servers)) {
+    if (mcp.mcpServers[name]) { note(`.mcp.json: kept your ${name} server`); continue; }
+    if (MCP_SKIP.has(name)) { note(`.mcp.json: skipped ${name} (--mcp-skip)`); continue; }
+    if (name === 'angular-cli' && existing.includes('@angular/cli')) { note('.mcp.json: skipped angular-cli (a server already runs @angular/cli)'); continue; }
+    // npx needs a cmd /c wrapper for Claude Code on Windows.
+    mcp.mcpServers[name] = def.command === 'npx' && process.platform === 'win32' ? { command: 'cmd', args: ['/c', 'npx', ...def.args] } : def;
+    added.push(name);
+  }
+  if (added.length) { write(mcpFile, `${JSON.stringify(mcp, null, 2)}\n`); note(`.mcp.json: ${DRY ? 'will add' : 'added'} ${added.join(', ')}`); }
+  else note('.mcp.json: nothing to add');
+}
+
 // 6. Check that every relative link in AGENTS.md resolves.
 const missing = [...agents.matchAll(/\]\(([^)#\s]+)\)/g)].map((m) => m[1])
   .filter((l) => !/^[a-z]+:/i.test(l))
-  .filter((l) => !fs.existsSync(path.join(target, l)) && !(DRY && l.startsWith('docs/agents/')));
+  .filter((l) => !fs.existsSync(path.join(target, l)) && !(DRY && (l.startsWith('docs/agents/') || (skillDest && l.startsWith(`${skillDest}/`)))));
 
 console.log(`Frontend AI Kit -> ${target}${DRY ? '  (dry run, nothing written)' : ''}`);
 for (const l of log) console.log(`  - ${l}`);
 console.log(missing.length ? `  ! broken links in AGENTS.md: ${missing.join(', ')}` : '  - all AGENTS.md links resolve');
 console.log('\nNext: review AGENTS.md (fill in the description if it is a placeholder), then commit AGENTS.md, CLAUDE.md, docs/agents/ and the skills folder.');
-if (SKILLS_MODE === 'claude' || SKILLS_MODE === 'both') console.log('Claude Code: if the frontend-ai-kit plugin is also enabled here, each skill shows twice. Use the plugin or --skills=claude, not both.');
+if ((SKILLS_MODE === 'claude' || SKILLS_MODE === 'both') && /frontend-ai-kit@[^"]*"\s*:\s*true/.test((() => { try { return fs.readFileSync(path.join(target, '.claude', 'settings.json'), 'utf8'); } catch { return ''; } })())) {
+  console.log('Claude Code: the frontend-ai-kit plugin is also enabled here, so each skill shows twice. Use --skills=agents with the plugin, or remove the plugin.');
+}
 if (log.some((l) => l.includes('(symlink)'))) console.log('Windows teammates: a committed CLAUDE.md symlink needs `git config core.symlinks true` (and Developer Mode); otherwise re-run with --claude=import.');
 if (missing.length) process.exitCode = 1;

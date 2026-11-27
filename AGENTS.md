@@ -19,16 +19,17 @@ House rules for Angular frontend work. This file stays small on purpose: it is s
 - Finishing a task, commits, PRs: [docs/agents/delivery.md](docs/agents/delivery.md)
 
 ## Skills
-Each skill is a folder with a `SKILL.md`. Claude Code loads them from the plugin; other tools find them in `.agents/skills/<name>/SKILL.md`.
-- Automatic: when a task matches a skill below, read its `SKILL.md` before you start, even if your tool did not load it for you.
-- Manual: when the user names a skill ("use css-styling", `/css-styling`), read that `SKILL.md` and follow it.
+Each link below opens a skill's `SKILL.md`.
+- Automatic: when a task matches a skill, open its `SKILL.md` and follow it before you start, even if your tool did not load it for you.
+- Manual: when the user names a skill ("use css-styling", `/css-styling`), open that `SKILL.md` and follow it.
+- A skill without a link comes from a plugin or is not installed here; use it by name if your tool lists it.
 
-- Angular: `angular-developer`, `angular-new-app` (official), `angular-patterns`
-- TypeScript: `typescript-safety`
-- Styling: `css-styling`, `ui-ux-pro-max` (optional)
-- Motion: `web-animations`, `advanced-animations`
-- Design to code: `replicate-website`
-- Kit: `setup`, `refresh-framework-skills`, `my-coding-habits`
+- Angular: `angular-developer`, `angular-new-app` (official), [angular-patterns](skills/angular/angular-patterns/SKILL.md)
+- TypeScript: [typescript-safety](skills/typescript/typescript-safety/SKILL.md)
+- Styling: [css-styling](skills/styling/css-styling/SKILL.md), `ui-ux-pro-max` (optional)
+- Motion: [web-animations](skills/motion/web-animations/SKILL.md), [advanced-animations](skills/motion/advanced-animations/SKILL.md)
+- Design to code: [replicate-website](skills/design-to-code/replicate-website/SKILL.md)
+- Kit: [refresh-framework-skills](skills/kit/refresh-framework-skills/SKILL.md), [my-coding-habits](skills/kit/my-coding-habits/SKILL.md), [setup](skills/kit/setup/SKILL.md) (Claude Code plugin only)
 
 In Claude Code, `claude --agent frontend-ai-kit:frontend-lead` plans, delegates to the specialist agents and verifies.
 

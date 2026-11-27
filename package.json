@@ -1,6 +1,6 @@
 {
   "name": "frontend-ai-kit-by-mk",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "description": "Install the Frontend AI Kit AGENTS.md rules and docs into any project.",
   "type": "module",

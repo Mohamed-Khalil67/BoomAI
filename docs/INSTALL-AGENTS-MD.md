@@ -8,6 +8,8 @@ your-project/
 ├── CLAUDE.md            # symlink to AGENTS.md (or a one-line @AGENTS.md import)
 ├── docs/agents/         # angular.md, typescript.md, accessibility.md, delivery.md
 ├── .agents/skills/      # the kit's skills, one <name>/SKILL.md each
+├── .claude/skills/      # the same skills for Claude Code (+ .claude/agents/)
+├── .mcp.json            # with --mcp: the kit's MCP servers
 └── apps/web/AGENTS.md   # optional: rules for one package in a monorepo
 ```
 
@@ -22,14 +24,14 @@ npx github:Mohamed-Khalil67/frontend-ai-kit-by-Mk
 
 With a local clone of the kit: `node <kit>/scripts/init.mjs`. In Claude Code with the plugin: `/frontend-ai-kit:setup` (Step 4 runs the same script).
 
-Options: `--gemini` also creates `GEMINI.md`; `--claude=import` writes `@AGENTS.md` instead of a symlink; `--claude=skip` leaves `CLAUDE.md` alone; `--skills=agents` (default) copies the skills into `.agents/skills/`, `--skills=claude` into `.claude/skills/`, `--skills=both` into both, `--skills=none` skips them.
+Options: `--gemini` also creates `GEMINI.md`; `--claude=import` writes `@AGENTS.md` instead of a symlink; `--claude=skip` leaves `CLAUDE.md` alone; `--skills=both` (default) copies the skills into `.agents/skills/` and `.claude/skills/` (plus the agents into `.claude/agents/`), `--skills=agents` or `--skills=claude` into one, `--skills=none` skips them; `--mcp` adds the kit's MCP servers to `.mcp.json` (run with `npx`, existing servers kept), `--mcp-skip=figma,...` leaves some out.
 
 What it does, and what it never does:
 - **New `AGENTS.md`:** writes a short header from `package.json` (name, description, package manager if not npm, Angular version, non-standard scripts, top-level folders), then the kit block between `<!-- frontend-ai-kit:start -->` and `<!-- frontend-ai-kit:end -->`.
 - **Existing `AGENTS.md`:** appends the kit block, or replaces only that block on re-runs. Your text is kept.
 - **`docs/agents/`:** copies the kit's docs. Files the kit manages are updated on re-run; a file you wrote with the same name is skipped.
 - **`CLAUDE.md`:** creates a symlink to `AGENTS.md` so the two can never drift; if symlinks are not allowed it writes `@AGENTS.md`. An existing `CLAUDE.md` gets `@AGENTS.md` added at the top.
-- **Skills:** copies each `skills/<category>/<name>/` from the kit into `.agents/skills/<name>/` (flattened, because tools look one folder deep). A lock file, `.frontend-ai-kit-skills.json`, records the kit's folders; re-runs replace them and remove ones the kit dropped. A folder you wrote with the same name is skipped. `setup` is left out because it is Claude Code only.
+- **Skills:** copies each `skills/<category>/<name>/` from the kit into `.agents/skills/<name>/` and `.claude/skills/<name>/` (flattened, because tools look one folder deep). A lock file, `.frontend-ai-kit-skills.json`, records the kit's folders; re-runs replace them and remove ones the kit dropped. A folder you wrote with the same name is skipped. `setup` is left out because it is Claude Code only.
 - Checks every link in `AGENTS.md` resolves. Never commits.
 
 Then review `AGENTS.md`, fill in the description if it is a placeholder, and commit `AGENTS.md`, `CLAUDE.md`, `docs/agents/` and `.agents/skills/`.

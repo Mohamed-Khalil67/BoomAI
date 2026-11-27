@@ -21,7 +21,7 @@ For `angular-dev`, ask whether to install the official Angular skills now, and s
 
 ## Step 4: install the shared rules
 The kit ships a small `AGENTS.md` (sent with every request) that links to topic docs in `docs/agents/` (read only when needed). One script installs both into the project and is safe to re-run. Ask once whether to install, then:
-1. Preview: `node "${CLAUDE_PLUGIN_ROOT}/scripts/init.mjs" --dry-run` in the project root. Show the user the list it prints.
+1. Preview: `node "${CLAUDE_PLUGIN_ROOT}/scripts/init.mjs" --skills=agents --dry-run` in the project root. Show the user the list it prints. Always pass `--skills=agents` here: the plugin already provides the skills to Claude Code, so copying them into `.claude/skills/` would load each one twice.
 2. If they agree, run it again without `--dry-run`. Add `--gemini` only if they use Gemini CLI. Codex, Cursor, Copilot and Antigravity read `AGENTS.md` directly.
 What it does: creates `AGENTS.md` with a short project header (description, package manager, non-standard scripts, top-level layout) plus the kit block between `<!-- frontend-ai-kit:start -->` / `<!-- frontend-ai-kit:end -->` markers, or appends/updates only that block in an existing `AGENTS.md`; copies `docs/agents/*.md` without touching files the user wrote; makes `CLAUDE.md` a symlink to `AGENTS.md` (falls back to a one-line `@AGENTS.md` import, or prepends that line to an existing `CLAUDE.md`). If the team clones on Windows without `core.symlinks`, suggest `--claude=import`.
 If the description in the header is a placeholder, ask the user for one or two sentences and fill it in. Tell the user to commit `AGENTS.md`, `CLAUDE.md` and `docs/agents/` (you do not commit).

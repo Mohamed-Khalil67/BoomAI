@@ -28,24 +28,43 @@ A Claude Code plugin for Angular frontend work: a lead agent that delegates to s
 
 Three steps: once per machine, once per project, and again whenever the kit changes. Needs Git and Node 18+.
 
-### Quick setup: one script
+### Fastest: npx, no clone
 
-Clone the kit once (step 1), then run this in each project root:
+Run this in the project root. npm fetches the kit from GitHub and copies it in; nothing else to install:
 
 ```bash
-node C:\Workspace\github\frontend-ai-kit-by-Mk\scripts\setup.mjs
+npx -y github:Mohamed-Khalil67/frontend-ai-kit-by-Mk --mcp
+```
+
+It writes, all inside the project:
+- `.agents/skills/<name>/SKILL.md`: the skills, for Codex, Cursor, Gemini CLI, Copilot, OpenCode and other tools.
+- `.claude/skills/<name>/SKILL.md` and `.claude/agents/`: the same skills plus the agents, for Claude Code.
+- `.mcp.json` (with `--mcp`): Chrome DevTools, Context7, Figma, and the Angular CLI server in Angular projects, all run with `npx`. Servers you already have are kept.
+- `AGENTS.md` (with a link to every skill's `SKILL.md`), `CLAUDE.md` and `docs/agents/`.
+
+Both skill folders are written by default, so the project works in whichever tool you open it with. `--skills=agents` or `--skills=claude` writes only one; `--gemini` also creates `GEMINI.md`; `--mcp-skip=figma` leaves out a server (for example when the Figma plugin already provides it); `--dry-run` previews. Re-run the same command to update. Reading the repo needs GitHub access to it (your SSH key or a signed-in `gh`).
+
+Do not combine this with the Claude Code plugin in the same project, or each skill shows twice; the installer warns when it sees the plugin enabled.
+
+### Quick setup: one script
+
+Clone the kit once (step 1), then run this in each project root. Use forward slashes in paths: they work in PowerShell, cmd and Git Bash, while Git Bash strips backslashes (a path typed with them fails with `Cannot find module`):
+
+```bash
+node C:/Workspace/github/frontend-ai-kit-by-Mk/scripts/setup.mjs
 ```
 
 It runs every command from steps 2 and 3 for you, in order:
 
 1. `git pull` in the kit clone (skip with `--no-pull`).
 2. Claude Code: registers the clone as the `frontend-ai-kit-by-mk` marketplace if it is missing, installs `frontend-ai-kit` for this project only (or updates it if it is already there), and adds the `angular-mcp` add-on when `package.json` has `@angular/core`.
-3. Runs `init.mjs` to write `AGENTS.md`, `CLAUDE.md`, `docs/agents/` and, for tools other than Claude Code, `.agents/skills/`.
+3. Runs `init.mjs` to write `AGENTS.md`, `CLAUDE.md`, `docs/agents/` and `.agents/skills/` (plus `.claude/skills/`, `.claude/agents/` and `.mcp.json` in files mode).
 4. Prints what is left: restart Claude Code, commit `.claude/settings.json` and `AGENTS.md`, sign in to Figma, say "set up the kit".
 
 Options:
-- `--tools=claude,codex,gemini,cursor,copilot,opencode`: the tools you use here. Default: `claude` if it is installed. Any tool other than Claude Code makes it copy the skills into `.agents/skills/`; `gemini` also creates `GEMINI.md`.
-- `--skills=agents|claude|both|none`: override where the skills are copied.
+- `--mode=plugin|files`: `plugin` (default) loads the skills, agents and MCP servers from the Claude Code plugin; nothing is copied into the project. `files` copies everything into the project instead: skills into `.claude/skills/`, agents into `.claude/agents/`, and the MCP servers (Chrome DevTools, Context7, Figma unless the Figma plugin is on, Angular CLI for Angular projects) into `.mcp.json` as `npx` commands. It removes the kit plugins from the project so nothing loads twice, and never changes MCP servers you already have. In both modes the root `AGENTS.md` links each skill to its `SKILL.md` in the project, so any agent can open it.
+- `--tools=claude,codex,gemini,cursor,copilot,opencode`: the tools you use here. Default: `claude` if it is installed. `gemini` also creates `GEMINI.md`.
+- `--skills=both|agents|claude|none`: override where the skills are copied. Default: `agents` in plugin mode, `both` in files mode, so `.agents/skills/` is always there for other tools.
 - `--dry-run`: print the commands without running them.
 
 Safe to re-run whenever the kit changes: each step is skipped or updated when it is already done. Sign-ins (Figma through `/mcp`) and the session restart stay manual.
@@ -57,13 +76,13 @@ The steps below are what the script does, if you prefer to run them by hand.
 Clone the kit over SSH (or HTTPS) to a fixed folder:
 
 ```bash
-git clone git@github.com:Mohamed-Khalil67/frontend-ai-kit-by-Mk.git C:\Workspace\github\frontend-ai-kit-by-Mk
+git clone git@github.com:Mohamed-Khalil67/frontend-ai-kit-by-Mk.git C:/Workspace/github/frontend-ai-kit-by-Mk
 ```
 
 **Claude Code:** register the clone as a local marketplace. It loads in place, so edits to the clone need no reinstall.
 
 ```bash
-claude plugin marketplace add C:\Workspace\github\frontend-ai-kit-by-Mk
+claude plugin marketplace add C:/Workspace/github/frontend-ai-kit-by-Mk
 ```
 
 To use GitHub instead of a clone (read-only, updates through `/plugin`): `claude plugin marketplace add Mohamed-Khalil67/frontend-ai-kit-by-Mk`.
@@ -78,23 +97,23 @@ Run these in the project root.
 
 ```bash
 claude plugin install frontend-ai-kit@frontend-ai-kit-by-mk --scope project
-node C:\Workspace\github\frontend-ai-kit-by-Mk\scripts\init.mjs
+node C:/Workspace/github/frontend-ai-kit-by-Mk/scripts/init.mjs --skills=agents
 ```
 
-The first line turns the kit on for this project only, in `.claude/settings.json`; commit that file so it stays on. The second writes `AGENTS.md`, `CLAUDE.md` and `docs/agents/`. In Angular projects also run `claude plugin install angular-mcp@frontend-ai-kit-by-mk --scope project`. Restart the session, then say "set up the kit" (or type `/frontend-ai-kit:setup`) for the guided checks (Angular version, official Angular skills, MCP servers).
+The first line turns the kit on for this project only, in `.claude/settings.json`; commit that file so it stays on. The second writes `AGENTS.md`, `CLAUDE.md`, `docs/agents/` and `.agents/skills/` for other tools (`--skills=agents` keeps the skills out of `.claude/skills/`, which the plugin already covers). In Angular projects also run `claude plugin install angular-mcp@frontend-ai-kit-by-mk --scope project`. Restart the session, then say "set up the kit" (or type `/frontend-ai-kit:setup`) for the guided checks (Angular version, official Angular skills, MCP servers).
 
 **Codex, Gemini CLI, Cursor, Copilot, OpenCode and other tools:**
 
 ```bash
-node C:\Workspace\github\frontend-ai-kit-by-Mk\scripts\init.mjs --gemini
+node C:/Workspace/github/frontend-ai-kit-by-Mk/scripts/init.mjs --gemini
 ```
 
-Or without a clone: `npx github:Mohamed-Khalil67/frontend-ai-kit-by-Mk --gemini`. This writes `AGENTS.md`, `docs/agents/` and copies the skills, flattened, into `.agents/skills/<name>/SKILL.md`. Drop `--gemini` if you do not use Gemini CLI. Add `--skills=claude` or `--skills=both` to also copy them into `.claude/skills/` (for Claude Code without the plugin; do not combine it with the plugin, or each skill shows twice). Add `--dry-run` to preview. Your own skills in those folders are never overwritten.
+Or without a clone: `npx -y github:Mohamed-Khalil67/frontend-ai-kit-by-Mk --gemini`. This writes `AGENTS.md`, `docs/agents/` and copies the skills, flattened, into both `.agents/skills/<name>/SKILL.md` and `.claude/skills/<name>/SKILL.md`. Drop `--gemini` if you do not use Gemini CLI. Add `--mcp` for the MCP servers, `--dry-run` to preview. Your own skills in those folders are never overwritten.
 
 ### 3. Whenever the kit changes
 
 ```bash
-git -C C:\Workspace\github\frontend-ai-kit-by-Mk pull
+git -C C:/Workspace/github/frontend-ai-kit-by-Mk pull
 ```
 
 - Claude Code: run `/reload-plugins` or start a new session. If a new skill still does not appear, run `claude plugin update frontend-ai-kit@frontend-ai-kit-by-mk`.
