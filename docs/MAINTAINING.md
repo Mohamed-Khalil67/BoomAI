@@ -1,4 +1,4 @@
-# Maintaining AI Skills by MK
+# Maintaining BoomAI
 
 Read by agents and people working on this repo. Not copied into projects.
 

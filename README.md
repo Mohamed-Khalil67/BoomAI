@@ -1,4 +1,4 @@
-# AI Skills by MK
+# BoomAI
 
 Agent skills, house rules and MCP servers for **frontend (Angular)** and **backend (NestJS)** work. One `npx` command copies the pack you choose into a project, where Claude Code, Codex, Cursor, Gemini CLI, Copilot and other tools pick it up.
 
@@ -7,7 +7,7 @@ Agent skills, house rules and MCP servers for **frontend (Angular)** and **backe
 Run in the project root (Node 18+ and Git; nothing else to install):
 
 ```bash
-npx -y github:Mohamed-Khalil67/ai-skills-by-mk
+npx -y github:Mohamed-Khalil67/BoomAI
 ```
 
 With no pack named, it asks four questions, each with a default you accept with Enter:
@@ -20,9 +20,9 @@ With no pack named, it asks four questions, each with a default you accept with 
 Then it shows what it will do and asks to confirm. To skip the questions (scripts, CI), name the pack and options:
 
 ```bash
-npx -y github:Mohamed-Khalil67/ai-skills-by-mk frontend --mcp
-npx -y github:Mohamed-Khalil67/ai-skills-by-mk backend --mcp
-npx -y github:Mohamed-Khalil67/ai-skills-by-mk all --mcp
+npx -y github:Mohamed-Khalil67/BoomAI frontend --mcp
+npx -y github:Mohamed-Khalil67/BoomAI backend --mcp
+npx -y github:Mohamed-Khalil67/BoomAI all --mcp
 ```
 
 Installing a second pack later adds it next to the first.

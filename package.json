@@ -1,10 +1,10 @@
 {
-  "name": "ai-skills-by-mk",
+  "name": "boomai",
   "version": "1.1.0",
   "private": true,
   "description": "Agent skills, rules and MCP servers for frontend (Angular) and backend (NestJS) work, copied into any project with npx.",
   "type": "module",
-  "bin": { "ai-skills": "scripts/install.mjs" },
+  "bin": { "boomai": "scripts/install.mjs" },
   "files": ["packs", "scripts"],
   "engines": { "node": ">=18" }
 }

@@ -1,6 +1,6 @@
-# AI Skills by MK: repository map
+# BoomAI: repository map
 
-This repo holds skill packs that `scripts/install.mjs` copies into projects (`npx -y github:Mohamed-Khalil67/ai-skills-by-mk <pack>`). This file is for agents working **on this repo**; it is not copied into projects. Maintenance rules: [docs/MAINTAINING.md](docs/MAINTAINING.md).
+This repo holds skill packs that `scripts/install.mjs` copies into projects (`npx -y github:Mohamed-Khalil67/BoomAI <pack>`). This file is for agents working **on this repo**; it is not copied into projects. Maintenance rules: [docs/MAINTAINING.md](docs/MAINTAINING.md).
 
 ## Packs
 Each pack is self-contained: an `AGENTS.md` block copied into the project's `AGENTS.md`, topic docs, skills by category, its MCP servers, and a `vendor.json` for third-party skills. There are no agent definitions: everything is a skill, so it works in every tool.

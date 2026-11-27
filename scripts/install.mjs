@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// AI Skills by MK: copy a skill pack (frontend, backend or all) into a project.
-// Usage: npx -y github:Mohamed-Khalil67/ai-skills-by-mk [frontend|backend|all] [projectDir]   (no pack: interactive)
+// BoomAI: copy a skill pack (frontend, backend or all) into a project.
+// Usage: npx -y github:Mohamed-Khalil67/BoomAI [frontend|backend|all] [projectDir]   (no pack: interactive)
 //          [--skills=both|agents|claude|none] [--mcp] [--mcp-skip=a,b] [--gemini] [--claude=symlink|import|skip] [--dry-run] [--list]
 // Safe to re-run: it updates what it installed and never overwrites or removes your own files.
 import fs from 'node:fs';
@@ -15,7 +15,7 @@ const PACKS = fs.readdirSync(PACKS_DIR).filter((d) => d !== 'common' && fs.statS
 const MANAGED = ['<!-- ai-skills: managed file.', '<!-- frontend-ai-kit: managed file.'];
 const LEGACY_BLOCK = ['<!-- frontend-ai-kit:start -->', '<!-- frontend-ai-kit:end -->'];
 const LOCK = '.ai-skills.json';
-const USAGE = `Usage: npx -y github:Mohamed-Khalil67/ai-skills-by-mk [${[...PACKS, 'all'].join('|')}] [projectDir]
+const USAGE = `Usage: npx -y github:Mohamed-Khalil67/BoomAI [${[...PACKS, 'all'].join('|')}] [projectDir]
   (no pack: asks which pack, tools, MCP servers and GEMINI.md, with defaults guessed from package.json)
   --skills=both|agents|claude|none  where skills go (default both: .agents/skills and .claude/skills)
   --mcp                             add the pack's MCP servers to .mcp.json
@@ -99,7 +99,7 @@ if (!packArg || flag('ask')) {
   const d = { ...readPkg().dependencies, ...readPkg().devDependencies };
   const guess = packArg ?? (d['@angular/core'] && d['@nestjs/core'] ? 'all' : d['@nestjs/core'] ? 'backend' : 'frontend');
   const packOptions = [...PACKS.map((p) => [p, `${p}${p === 'frontend' ? ' (Angular)' : p === 'backend' ? ' (NestJS)' : ''}: ${packSkills(p).length} skills`]), ['all', 'all: every pack']];
-  console.log(`AI Skills by MK -> ${target}`);
+  console.log(`BoomAI -> ${target}`);
   packArg = await ask('Which pack?', packOptions, packOptions.findIndex(([v]) => v === guess));
   if (!args.some((a) => a.startsWith('--skills='))) SKILLS_MODE = await ask('Which tools will you use here?', [
     ['both', 'Any tool: .agents/skills/ (Codex, Cursor, Gemini CLI, Copilot) and .claude/skills/ (Claude Code)'],
@@ -213,7 +213,7 @@ function installSet(base, legacyFile, legacyKey, items, kind) {
     lock.packs[pack] = kept;
   }
   for (const p of Object.keys(lock.packs)) if (!lock.packs[p].length) delete lock.packs[p];
-  if (Object.keys(lock.packs).length) write(path.join(dir, LOCK), `${JSON.stringify({ note: `${kind} installed by AI Skills by MK, per pack. Re-running the installer replaces them.`, packs: lock.packs }, null, 2)}\n`);
+  if (Object.keys(lock.packs).length) write(path.join(dir, LOCK), `${JSON.stringify({ note: `${kind} installed by BoomAI, per pack. Re-running the installer replaces them.`, packs: lock.packs }, null, 2)}\n`);
   else if (fs.existsSync(dir)) {
     remove(path.join(dir, LOCK));
     if (!DRY && !fs.readdirSync(dir).length) fs.rmdirSync(dir);
@@ -284,7 +284,7 @@ const missing = [...agents.matchAll(/\]\(([^)#\s]+)\)/g)].map((m) => m[1])
   .filter((l) => !/^[a-z]+:/i.test(l) && !fs.existsSync(path.join(target, l)))
   .filter((l) => !(DRY && (l.startsWith('docs/agents/') || SKILL_DIRS.some((d) => l.startsWith(`${d}/`)))));
 
-console.log(`AI Skills by MK: ${selected.join(' + ')} -> ${target}${DRY ? '  (dry run, nothing written)' : ''}`);
+console.log(`BoomAI: ${selected.join(' + ')} -> ${target}${DRY ? '  (dry run, nothing written)' : ''}`);
 for (const l of log) console.log(`  - ${l}`);
 console.log(missing.length ? `  ! broken links in AGENTS.md: ${missing.join(', ')}` : '  - all AGENTS.md links resolve');
 console.log('\nNext: review AGENTS.md, then commit AGENTS.md, CLAUDE.md, docs/agents/ and the skill folders (or git-ignore them).');

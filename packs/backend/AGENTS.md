@@ -1,4 +1,4 @@
-# Backend rules (AI Skills by MK)
+# Backend rules (BoomAI)
 
 House rules for NestJS and Node.js backend work. This block stays small on purpose: it is sent with every request, so topic rules live in `docs/agents/` and are read only when the task needs them.
 

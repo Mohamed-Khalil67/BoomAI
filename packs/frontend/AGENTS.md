@@ -1,4 +1,4 @@
-# Frontend rules (AI Skills by MK)
+# Frontend rules (BoomAI)
 
 House rules for Angular frontend work. This block stays small on purpose: it is sent with every request, so topic rules live in `docs/agents/` and are read only when the task needs them.
 

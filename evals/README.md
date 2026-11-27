@@ -3,7 +3,7 @@
 The skill-authoring guide says to write evaluations before piling on instructions. There is no built-in runner, so these are scripted manual checks: run each prompt in a real Angular project with the frontend pack installed, then tick the pass criteria. Record the date, the Claude model, the Angular version and the result in `results.md`.
 
 ## How to run
-1. In a throwaway branch of a real Angular project, run `npx -y github:Mohamed-Khalil67/ai-skills-by-mk frontend --mcp` and restart the session.
+1. In a throwaway branch of a real Angular project, run `npx -y github:Mohamed-Khalil67/BoomAI frontend --mcp` and restart the session.
 2. Start a normal session in your tool.
 3. Paste one prompt. Do not hint at which skill to use; the point is whether routing works.
 4. Tick the criteria. A failed trigger usually means the description needs rewriting; a wrong result usually means the skill text is wrong.
