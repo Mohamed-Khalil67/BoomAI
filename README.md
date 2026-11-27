@@ -7,16 +7,30 @@ Agent skills, house rules and MCP servers for **frontend (Angular)** and **backe
 Run in the project root (Node 18+ and Git; nothing else to install):
 
 ```bash
+npx -y github:Mohamed-Khalil67/ai-skills-by-mk
+```
+
+With no pack named, it asks four questions, each with a default you accept with Enter:
+
+1. **Which pack?** `frontend` (Angular), `backend` (NestJS) or `all`. The default is guessed from `package.json`: Angular gives `frontend`, NestJS gives `backend`, both give `all`.
+2. **Which tools?** Any tool (`.agents/skills/` and `.claude/skills/`), Claude Code only, or other tools only.
+3. **MCP servers?** Add the pack's servers to `.mcp.json`.
+4. **GEMINI.md?** For Gemini CLI.
+
+Then it shows what it will do and asks to confirm. To skip the questions (scripts, CI), name the pack and options:
+
+```bash
 npx -y github:Mohamed-Khalil67/ai-skills-by-mk frontend --mcp
 npx -y github:Mohamed-Khalil67/ai-skills-by-mk backend --mcp
 npx -y github:Mohamed-Khalil67/ai-skills-by-mk all --mcp
 ```
 
-Pick one pack, or `all` for a full-stack project. Installing a second pack later adds it next to the first.
+Installing a second pack later adds it next to the first.
 
 | Option | Effect |
 |---|---|
-| `frontend`, `backend`, `all` | The pack to install (required) |
+| `frontend`, `backend`, `all` | The pack to install. Leave it out to be asked |
+| `--ask` | Ask the questions even when a pack is given |
 | `--mcp` | Add the pack's MCP servers to `.mcp.json` (servers you already have are kept) |
 | `--mcp-skip=figma,...` | Leave some servers out, for example when a Figma plugin already provides one |
 | `--skills=both` (default), `agents`, `claude`, `none` | Where the skills go: `.agents/skills/` (Codex, Cursor, Gemini CLI, Copilot, OpenCode), `.claude/skills/` (Claude Code), both, or nowhere |
@@ -36,7 +50,6 @@ your-project/
 ├── docs/agents/           # topic rules read on demand: delivery, typescript (+ angular, accessibility | nestjs)
 ├── .agents/skills/        # every skill of the pack, one <name>/SKILL.md per folder
 ├── .claude/skills/        # the same skills for Claude Code
-├── .claude/agents/        # frontend pack: frontend-lead and five specialists
 └── .mcp.json              # with --mcp
 ```
 
@@ -48,14 +61,13 @@ your-project/
 
 | Category | Skills |
 |---|---|
-| Angular | `angular-patterns` (plus the official `angular-developer` and `angular-new-app`, fetched by `refresh-framework-skills`) |
+| Angular | `angular-developer` and `angular-new-app` (official, from the Angular team), `angular-patterns` |
 | TypeScript | `typescript-safety` |
 | Styling | `css-styling` |
 | Motion | `web-animations`, `advanced-animations` |
 | Design to code | `replicate-website` |
-| Kit | `refresh-framework-skills`, `my-coding-habits` |
-
-Agents (Claude Code): `frontend-lead` plans, delegates and verifies; `angular-dev`, `ui-stylist`, `motion-dev`, `a11y-reviewer` (read-only), `perf-auditor` (read-only). Start the lead with `claude --agent frontend-lead`.
+| Quality | `accessibility-review` (WCAG AA), `performance-audit` (bundle, Core Web Vitals); both read-only reviews |
+| Habits | `my-coding-habits` |
 
 MCP (`--mcp`): Figma, Chrome DevTools, Context7, and the Angular CLI server in Angular projects.
 
@@ -71,7 +83,7 @@ MCP (`--mcp`): Figma, Chrome DevTools, Context7, and the Angular CLI server in A
 
 MCP (`--mcp`): Context7.
 
-Third-party skills are copied at a reviewed commit and listed with their licence in [`packs/backend/vendor.json`](packs/backend/vendor.json). `security-review` is CC BY-SA 4.0; the others are MIT.
+Third-party skills (both packs) are copied at a reviewed commit and listed with their licence in [`packs/frontend/vendor.json`](packs/frontend/vendor.json) and [`packs/backend/vendor.json`](packs/backend/vendor.json). `security-review` is CC BY-SA 4.0; the others are MIT. Updating one means bumping the pinned commit in the repo; projects get it by re-running the installer.
 
 ## Using the skills: automatic or by name
 
@@ -97,4 +109,4 @@ On Windows, a committed `CLAUDE.md` symlink only works with `git config core.sym
 
 ## Repository layout
 
-See [AGENTS.md](AGENTS.md) for the map of this repo and [docs/MAINTAINING.md](docs/MAINTAINING.md) for adding skills or packs. The repo is public, but no licence is set for its own content yet, so others may read and install it but have no rights to reuse it. The vendored skills keep their own licences (see `packs/backend/vendor.json`).
+See [AGENTS.md](AGENTS.md) for the map of this repo and [docs/MAINTAINING.md](docs/MAINTAINING.md) for adding skills or packs. The repo is public, but no licence is set for its own content yet, so others may read and install it but have no rights to reuse it. The vendored skills keep their own licences (see the packs' `vendor.json`).

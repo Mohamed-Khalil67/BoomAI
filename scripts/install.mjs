@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // AI Skills by MK: copy a skill pack (frontend, backend or all) into a project.
-// Usage: npx -y github:Mohamed-Khalil67/ai-skills-by-mk <frontend|backend|all> [projectDir]
+// Usage: npx -y github:Mohamed-Khalil67/ai-skills-by-mk [frontend|backend|all] [projectDir]   (no pack: interactive)
 //          [--skills=both|agents|claude|none] [--mcp] [--mcp-skip=a,b] [--gemini] [--claude=symlink|import|skip] [--dry-run] [--list]
 // Safe to re-run: it updates what it installed and never overwrites or removes your own files.
 import fs from 'node:fs';
@@ -9,17 +9,21 @@ import { fileURLToPath } from 'node:url';
 
 const KIT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PACKS_DIR = path.join(KIT, 'packs');
-const PACKS = fs.readdirSync(PACKS_DIR).filter((d) => d !== 'common' && fs.statSync(path.join(PACKS_DIR, d)).isDirectory());
+const ORDER = ['frontend', 'backend'];
+const PACKS = fs.readdirSync(PACKS_DIR).filter((d) => d !== 'common' && fs.statSync(path.join(PACKS_DIR, d)).isDirectory())
+  .sort((a, b) => (ORDER.indexOf(a) + 1 || 99) - (ORDER.indexOf(b) + 1 || 99) || a.localeCompare(b));
 const MANAGED = ['<!-- ai-skills: managed file.', '<!-- frontend-ai-kit: managed file.'];
 const LEGACY_BLOCK = ['<!-- frontend-ai-kit:start -->', '<!-- frontend-ai-kit:end -->'];
 const LOCK = '.ai-skills.json';
-const USAGE = `Usage: npx -y github:Mohamed-Khalil67/ai-skills-by-mk <${[...PACKS, 'all'].join('|')}> [projectDir]
+const USAGE = `Usage: npx -y github:Mohamed-Khalil67/ai-skills-by-mk [${[...PACKS, 'all'].join('|')}] [projectDir]
+  (no pack: asks which pack, tools, MCP servers and GEMINI.md, with defaults guessed from package.json)
   --skills=both|agents|claude|none  where skills go (default both: .agents/skills and .claude/skills)
   --mcp                             add the pack's MCP servers to .mcp.json
   --mcp-skip=figma,...              leave some servers out
   --gemini                          also create GEMINI.md
   --claude=symlink|import|skip      how CLAUDE.md points at AGENTS.md (default symlink)
   --dry-run                         show what would change, write nothing
+  --ask                             ask the questions even when a pack is given
   --list                            list the packs and their skills`;
 
 const args = process.argv.slice(2);
@@ -49,19 +53,68 @@ if (flag('list')) {
   process.exit(0);
 }
 
-const packArg = positional.find((a) => [...PACKS, 'all'].includes(a));
-if (!packArg) fail(positional.length ? `unknown pack "${positional[0]}"` : 'choose a pack');
-const selected = packArg === 'all' ? PACKS : [packArg];
-const target = path.resolve(positional.find((a) => a !== packArg) || process.cwd());
+let packArg = positional.find((a) => [...PACKS, 'all'].includes(a));
+const dirArg = positional.find((a) => a !== packArg && !PACKS.includes(a) && a !== 'all');
+if (!packArg && positional.length && !dirArg) fail(`unknown pack "${positional[0]}"`);
+const target = path.resolve(dirArg || process.cwd());
+if (!fs.existsSync(target) || !fs.statSync(target).isDirectory()) fail(`not a folder: ${target}`);
+if (target === KIT) fail('run this inside your project, not inside the AI Skills repo');
 const DRY = flag('dry-run');
 const CLAUDE_MODE = opt('claude', 'symlink');
-const SKILLS_MODE = opt('skills', 'both');
-const MCP = flag('mcp');
+let SKILLS_MODE = opt('skills', 'both');
+let MCP = flag('mcp');
+let GEMINI = flag('gemini');
 const MCP_SKIP = new Set(opt('mcp-skip', '').split(',').filter(Boolean));
 if (!['symlink', 'import', 'skip'].includes(CLAUDE_MODE)) fail('--claude must be symlink, import or skip');
 if (!['both', 'agents', 'claude', 'none'].includes(SKILLS_MODE)) fail('--skills must be both, agents, claude or none');
-if (!fs.existsSync(target) || !fs.statSync(target).isDirectory()) fail(`not a folder: ${target}`);
-if (target === KIT) fail('run this inside your project, not inside the AI Skills repo');
+
+// No pack on the command line: ask, when someone is at the terminal. Each question suggests a default
+// from the project (Angular -> frontend, NestJS -> backend, both -> all); Enter accepts it.
+if (!packArg || flag('ask')) {
+  if (!process.stdin.isTTY && !flag('ask')) fail('choose a pack, or run it in a terminal to be asked');
+  const { createInterface } = await import('node:readline');
+  const rl = createInterface({ input: process.stdin, terminal: false });
+  // Queue lines as they arrive, so answers typed or pasted ahead of a question are not lost.
+  const queued = [];
+  let waiting = null;
+  let closed = false;
+  rl.on('line', (l) => (waiting ? (waiting(l), (waiting = null)) : queued.push(l)));
+  rl.on('close', () => { closed = true; if (waiting) waiting(''); });
+  const nextLine = () => (queued.length ? Promise.resolve(queued.shift()) : closed ? Promise.resolve('') : new Promise((r) => (waiting = r)));
+  const ask = async (question, options, def) => {
+    console.log(`\n${question}`);
+    options.forEach(([, label], i) => console.log(`  ${i + 1}) ${label}${i === def ? '  (default)' : ''}`));
+    for (;;) {
+      process.stdout.write(`Choose 1-${options.length} [${def + 1}]: `);
+      const a = (await nextLine()).trim();
+      if (!process.stdin.isTTY) console.log(a);
+      if (!a) return options[def][0];
+      const n = Number(a);
+      if (n >= 1 && n <= options.length) return options[n - 1][0];
+      const byName = options.find(([v]) => String(v) === a);
+      if (byName) return byName[0];
+      console.log(`  Type a number from 1 to ${options.length}, or press Enter for ${def + 1}.`);
+    }
+  };
+  const d = { ...readPkg().dependencies, ...readPkg().devDependencies };
+  const guess = packArg ?? (d['@angular/core'] && d['@nestjs/core'] ? 'all' : d['@nestjs/core'] ? 'backend' : 'frontend');
+  const packOptions = [...PACKS.map((p) => [p, `${p}${p === 'frontend' ? ' (Angular)' : p === 'backend' ? ' (NestJS)' : ''}: ${packSkills(p).length} skills`]), ['all', 'all: every pack']];
+  console.log(`AI Skills by MK -> ${target}`);
+  packArg = await ask('Which pack?', packOptions, packOptions.findIndex(([v]) => v === guess));
+  if (!args.some((a) => a.startsWith('--skills='))) SKILLS_MODE = await ask('Which tools will you use here?', [
+    ['both', 'Any tool: .agents/skills/ (Codex, Cursor, Gemini CLI, Copilot) and .claude/skills/ (Claude Code)'],
+    ['claude', 'Claude Code only: .claude/skills/'],
+    ['agents', 'Other tools only: .agents/skills/'],
+  ], 0);
+  if (!flag('mcp')) MCP = await ask('Add the pack\'s MCP servers to .mcp.json? (servers you already have are kept)', [[true, 'Yes'], [false, 'No']], 0);
+  if (!flag('gemini')) GEMINI = await ask('Create GEMINI.md for Gemini CLI?', [[false, 'No'], [true, 'Yes']], 0);
+  const go = await ask(`Install ${packArg} into ${target}${DRY ? ' (dry run)' : ''}?`, [[true, 'Yes'], [false, 'Cancel']], 0);
+  rl.close();
+  if (!go) { console.log('Cancelled; nothing written.'); process.exit(0); }
+  console.log('');
+}
+function readPkg() { try { return JSON.parse(fs.readFileSync(path.join(target, 'package.json'), 'utf8')); } catch { return {}; } }
+const selected = packArg === 'all' ? PACKS : [packArg];
 
 const log = [];
 const note = (s) => log.push(s);
@@ -159,7 +212,12 @@ function installSet(base, legacyFile, legacyKey, items, kind) {
     for (const old of lock.packs[pack] ?? []) if (!now.some((it) => it.name === old)) { remove(path.join(dir, old)); note(`removed ${rel(path.join(dir, old))} (dropped from ${pack})`); }
     lock.packs[pack] = kept;
   }
-  if (count || Object.keys(lock.packs).length) write(path.join(dir, LOCK), `${JSON.stringify({ note: `${kind} installed by AI Skills by MK, per pack. Re-running the installer replaces them.`, packs: lock.packs }, null, 2)}\n`);
+  for (const p of Object.keys(lock.packs)) if (!lock.packs[p].length) delete lock.packs[p];
+  if (Object.keys(lock.packs).length) write(path.join(dir, LOCK), `${JSON.stringify({ note: `${kind} installed by AI Skills by MK, per pack. Re-running the installer replaces them.`, packs: lock.packs }, null, 2)}\n`);
+  else if (fs.existsSync(dir)) {
+    remove(path.join(dir, LOCK));
+    if (!DRY && !fs.readdirSync(dir).length) fs.rmdirSync(dir);
+  }
   if (count) note(`${DRY ? 'will install' : 'installed'} ${count} ${kind.toLowerCase()} in ${rel(dir)}/`);
 }
 function copyDir(from, to) {
@@ -219,7 +277,7 @@ function pointer(name, mode) {
   note(`created ${name} containing @AGENTS.md`);
 }
 if (CLAUDE_MODE !== 'skip') pointer('CLAUDE.md', CLAUDE_MODE);
-if (flag('gemini')) pointer('GEMINI.md', CLAUDE_MODE === 'skip' ? 'symlink' : CLAUDE_MODE);
+if (GEMINI) pointer('GEMINI.md', CLAUDE_MODE === 'skip' ? 'symlink' : CLAUDE_MODE);
 
 // 6. Every relative link in AGENTS.md must resolve.
 const missing = [...agents.matchAll(/\]\(([^)#\s]+)\)/g)].map((m) => m[1])

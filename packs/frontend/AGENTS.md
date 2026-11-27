@@ -24,14 +24,13 @@ Each link below opens a skill's `SKILL.md`.
 - Manual: when the user names a skill ("use css-styling", `/css-styling`), open that `SKILL.md` and follow it.
 - A skill without a link is not installed here; use it by name if your tool lists it.
 
-- Angular: `angular-developer`, `angular-new-app` (official), [angular-patterns](skills/angular/angular-patterns/SKILL.md)
+- Angular: [angular-developer](skills/angular/angular-developer/SKILL.md) and [angular-new-app](skills/angular/angular-new-app/SKILL.md) (official, Angular team), [angular-patterns](skills/angular/angular-patterns/SKILL.md)
 - TypeScript: [typescript-safety](skills/typescript/typescript-safety/SKILL.md)
-- Styling: [css-styling](skills/styling/css-styling/SKILL.md), `ui-ux-pro-max` (optional)
+- Styling: [css-styling](skills/styling/css-styling/SKILL.md)
 - Motion: [web-animations](skills/motion/web-animations/SKILL.md), [advanced-animations](skills/motion/advanced-animations/SKILL.md)
 - Design to code: [replicate-website](skills/design-to-code/replicate-website/SKILL.md)
-- Kit: [refresh-framework-skills](skills/kit/refresh-framework-skills/SKILL.md), [my-coding-habits](skills/kit/my-coding-habits/SKILL.md)
-
-In Claude Code, `claude --agent frontend-lead` plans, delegates to the specialist agents (`angular-dev`, `ui-stylist`, `motion-dev`, `a11y-reviewer`, `perf-auditor`) and verifies.
+- Quality: [accessibility-review](skills/quality/accessibility-review/SKILL.md), [performance-audit](skills/quality/performance-audit/SKILL.md)
+- Habits: [my-coding-habits](skills/habits/my-coding-habits/SKILL.md)
 
 ## Always
 - Never commit or push unless explicitly asked.

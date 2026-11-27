@@ -1,0 +1,23 @@
+{
+  "_comment": "Third-party skills copied into this pack, pinned to a reviewed commit. To update: read the upstream diff since the pinned commit, copy the folders again, keep the NOTICE.md files, bump the commit.",
+  "skills": [
+    {
+      "name": "angular-developer",
+      "into": "skills/angular/angular-developer",
+      "repo": "https://github.com/angular/skills",
+      "path": "angular-developer",
+      "commit": "8be7db32d66e643c5e8e2a871dedd44435df6b7a",
+      "licence": "MIT (stated in the SKILL.md frontmatter, copyright Google LLC; no LICENSE file upstream, see NOTICE.md)",
+      "localChanges": ["NOTICE.md added"]
+    },
+    {
+      "name": "angular-new-app",
+      "into": "skills/angular/angular-new-app",
+      "repo": "https://github.com/angular/skills",
+      "path": "angular-new-app",
+      "commit": "8be7db32d66e643c5e8e2a871dedd44435df6b7a",
+      "licence": "MIT (stated in the SKILL.md frontmatter, copyright Google LLC; no LICENSE file upstream, see NOTICE.md)",
+      "localChanges": ["NOTICE.md added"]
+    }
+  ]
+}
