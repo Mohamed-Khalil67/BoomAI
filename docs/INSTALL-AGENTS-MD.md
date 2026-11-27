@@ -7,6 +7,7 @@ your-project/
 ├── AGENTS.md            # short project header + kit block (links only)
 ├── CLAUDE.md            # symlink to AGENTS.md (or a one-line @AGENTS.md import)
 ├── docs/agents/         # angular.md, typescript.md, accessibility.md, delivery.md
+├── .agents/skills/      # the kit's skills, one <name>/SKILL.md each
 └── apps/web/AGENTS.md   # optional: rules for one package in a monorepo
 ```
 
@@ -21,16 +22,17 @@ npx github:Mohamed-Khalil67/frontend-ai-kit-by-Mk
 
 With a local clone of the kit: `node <kit>/scripts/init.mjs`. In Claude Code with the plugin: `/frontend-ai-kit:setup` (Step 4 runs the same script).
 
-Options: `--gemini` also creates `GEMINI.md`; `--claude=import` writes `@AGENTS.md` instead of a symlink; `--claude=skip` leaves `CLAUDE.md` alone.
+Options: `--gemini` also creates `GEMINI.md`; `--claude=import` writes `@AGENTS.md` instead of a symlink; `--claude=skip` leaves `CLAUDE.md` alone; `--skills=agents` (default) copies the skills into `.agents/skills/`, `--skills=claude` into `.claude/skills/`, `--skills=both` into both, `--skills=none` skips them.
 
 What it does, and what it never does:
 - **New `AGENTS.md`:** writes a short header from `package.json` (name, description, package manager if not npm, Angular version, non-standard scripts, top-level folders), then the kit block between `<!-- frontend-ai-kit:start -->` and `<!-- frontend-ai-kit:end -->`.
 - **Existing `AGENTS.md`:** appends the kit block, or replaces only that block on re-runs. Your text is kept.
 - **`docs/agents/`:** copies the kit's docs. Files the kit manages are updated on re-run; a file you wrote with the same name is skipped.
 - **`CLAUDE.md`:** creates a symlink to `AGENTS.md` so the two can never drift; if symlinks are not allowed it writes `@AGENTS.md`. An existing `CLAUDE.md` gets `@AGENTS.md` added at the top.
+- **Skills:** copies each `skills/<category>/<name>/` from the kit into `.agents/skills/<name>/` (flattened, because tools look one folder deep). A lock file, `.frontend-ai-kit-skills.json`, records the kit's folders; re-runs replace them and remove ones the kit dropped. A folder you wrote with the same name is skipped. `setup` is left out because it is Claude Code only.
 - Checks every link in `AGENTS.md` resolves. Never commits.
 
-Then review `AGENTS.md`, fill in the description if it is a placeholder, and commit `AGENTS.md`, `CLAUDE.md` and `docs/agents/`.
+Then review `AGENTS.md`, fill in the description if it is a placeholder, and commit `AGENTS.md`, `CLAUDE.md`, `docs/agents/` and `.agents/skills/`.
 
 ## Keep it small
 
@@ -61,7 +63,7 @@ Put an `AGENTS.md` in a package folder (for example `apps/web/`) for rules that 
 
 ## Skills
 
-`AGENTS.md` names the skills; the skills are separate. In Claude Code, install the plugin (see the README). Elsewhere, `npx skills add Mohamed-Khalil67/frontend-ai-kit-by-Mk` may work but is untested. Every installed skill's name and description is sent with each request, so install only the ones you use. Without the skills, the docs in `docs/agents/` still apply.
+`AGENTS.md` lists the skills by category and tells the agent to read a skill's `SKILL.md` when the task matches or when you name it. That works even in tools with no skill support. In Claude Code, the plugin provides the skills; elsewhere, the installer copies them into `.agents/skills/`, which tools with Agent Skills support load on their own. Every loaded skill's name and description is sent with each request. Without the skills, the docs in `docs/agents/` still apply.
 
 ## Verify
 

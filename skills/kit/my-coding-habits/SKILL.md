@@ -7,7 +7,7 @@ description: The owner's personal Angular and TypeScript coding habits and house
 
 These are defaults, not laws. Order of authority: the project's `AGENTS.md` / `CLAUDE.md` (and nested `AGENTS.md` files), then the lessons in the agent's memory, then these conventions. Only use an API if the project's Angular version supports it; if a habit needs a newer version, say so and use the closest older equivalent.
 
-The rules are not repeated here, so there is one copy to maintain. Read only the file that matches the task, from the project's `docs/agents/` folder (installed by the kit's setup). If the project does not have that folder, read the kit's copy at `../../docs/agents/` relative to this skill.
+The rules are not repeated here, so there is one copy to maintain. Read only the file that matches the task, from the project's `docs/agents/` folder (installed by the kit's setup). If the project does not have that folder, read the kit's copy at `../../../docs/agents/` relative to this skill.
 
 - Angular components, services, templates, forms: `angular.md`
 - TypeScript: `typescript.md` (pair with the `typescript-safety` skill for the typecheck gate)

@@ -18,8 +18,19 @@ House rules for Angular frontend work. This file stays small on purpose: it is s
 - Accessibility: [docs/agents/accessibility.md](docs/agents/accessibility.md)
 - Finishing a task, commits, PRs: [docs/agents/delivery.md](docs/agents/delivery.md)
 
-## Skills (load when the task matches, if installed)
-`angular-developer` / `angular-new-app` (official), `angular-patterns`, `typescript-safety`, `css-styling`, `ui-ux-pro-max` (optional), `replicate-website`, `web-animations`, `advanced-animations`, `refresh-framework-skills`. In Claude Code, `claude --agent frontend-ai-kit:frontend-lead` plans, delegates to the specialist agents and verifies.
+## Skills
+Each skill is a folder with a `SKILL.md`. Claude Code loads them from the plugin; other tools find them in `.agents/skills/<name>/SKILL.md`.
+- Automatic: when a task matches a skill below, read its `SKILL.md` before you start, even if your tool did not load it for you.
+- Manual: when the user names a skill ("use css-styling", `/css-styling`), read that `SKILL.md` and follow it.
+
+- Angular: `angular-developer`, `angular-new-app` (official), `angular-patterns`
+- TypeScript: `typescript-safety`
+- Styling: `css-styling`, `ui-ux-pro-max` (optional)
+- Motion: `web-animations`, `advanced-animations`
+- Design to code: `replicate-website`
+- Kit: `setup`, `refresh-framework-skills`, `my-coding-habits`
+
+In Claude Code, `claude --agent frontend-ai-kit:frontend-lead` plans, delegates to the specialist agents and verifies.
 
 ## Always
 - Never commit or push unless explicitly asked.

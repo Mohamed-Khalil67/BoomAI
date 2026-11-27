@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Frontend AI Kit by MK: install the shared AGENTS.md rules into any project.
-// Usage: node scripts/init.mjs [projectDir] [--dry-run] [--gemini] [--claude=symlink|import|skip]
-// Safe to re-run: it updates the kit block and the kit's docs, and never overwrites your own content.
+// Usage: node scripts/init.mjs [projectDir] [--dry-run] [--gemini] [--claude=symlink|import|skip] [--skills=agents|claude|both|none]
+// Safe to re-run: it updates the kit block, the kit's docs and the kit's skills, and never overwrites your own content.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,13 +16,15 @@ const args = process.argv.slice(2);
 const flag = (n) => args.includes(`--${n}`);
 const opt = (n, d) => (args.find((a) => a.startsWith(`--${n}=`)) || `=${d}`).split('=')[1];
 if (flag('help') || flag('h')) {
-  console.log('Usage: frontend-ai-kit [projectDir] [--dry-run] [--gemini] [--claude=symlink|import|skip]');
+  console.log('Usage: frontend-ai-kit [projectDir] [--dry-run] [--gemini] [--claude=symlink|import|skip] [--skills=agents|claude|both|none]');
   process.exit(0);
 }
 const DRY = flag('dry-run');
 const CLAUDE_MODE = opt('claude', 'symlink');
+const SKILLS_MODE = opt('skills', 'agents');
 const target = path.resolve(args.find((a) => !a.startsWith('--')) || process.cwd());
 if (!['symlink', 'import', 'skip'].includes(CLAUDE_MODE)) fail(`--claude must be symlink, import or skip`);
+if (!['agents', 'claude', 'both', 'none'].includes(SKILLS_MODE)) fail(`--skills must be agents, claude, both or none`);
 if (!fs.existsSync(target) || !fs.statSync(target).isDirectory()) fail(`Not a folder: ${target}`);
 if (path.resolve(target) === KIT) fail('Run this inside your project, not inside the kit itself.');
 
@@ -103,7 +105,51 @@ function pointer(name, mode) {
 if (CLAUDE_MODE !== 'skip') pointer('CLAUDE.md', CLAUDE_MODE);
 if (flag('gemini')) pointer('GEMINI.md', CLAUDE_MODE === 'skip' ? 'symlink' : CLAUDE_MODE);
 
-// 5. Check that every relative link in AGENTS.md resolves.
+// 5. Skills: flatten skills/<category>/<name>/ into <project>/.agents/skills/<name>/ (and/or .claude/skills/).
+// A lock file records which folders the kit owns, so your own skills are never overwritten or removed.
+// `setup` is left out: it drives the Claude Code plugin and has no meaning elsewhere.
+const SKILL_SKIP = new Set(['setup']);
+const kitSkills = [];
+const skillsRoot = path.join(KIT, 'skills');
+for (const cat of fs.readdirSync(skillsRoot, { withFileTypes: true }).filter((d) => d.isDirectory())) {
+  for (const sk of fs.readdirSync(path.join(skillsRoot, cat.name), { withFileTypes: true }).filter((d) => d.isDirectory())) {
+    const dir = path.join(skillsRoot, cat.name, sk.name);
+    if (fs.existsSync(path.join(dir, 'SKILL.md')) && !SKILL_SKIP.has(sk.name)) kitSkills.push({ name: sk.name, dir });
+  }
+}
+function copyDir(from, to) {
+  for (const e of fs.readdirSync(from, { withFileTypes: true })) {
+    if (e.isSymbolicLink()) continue;
+    const a = path.join(from, e.name), b = path.join(to, e.name);
+    if (e.isDirectory()) copyDir(a, b);
+    else write(b, fs.readFileSync(a));
+  }
+}
+function installSkills(base) {
+  const dest = path.join(target, base);
+  const lockFile = path.join(dest, '.frontend-ai-kit-skills.json');
+  const owned = new Set(fs.existsSync(lockFile) ? JSON.parse(fs.readFileSync(lockFile, 'utf8')).skills : []);
+  const installed = [];
+  for (const s of kitSkills) {
+    const to = path.join(dest, s.name);
+    if (fs.existsSync(to) && !owned.has(s.name)) { note(`skipped ${rel(to)} (yours, not the kit's)`); continue; }
+    if (!DRY) fs.rmSync(to, { recursive: true, force: true });
+    copyDir(s.dir, to);
+    installed.push(s.name);
+  }
+  for (const name of owned) {
+    if (!kitSkills.some((s) => s.name === name)) {
+      if (!DRY) fs.rmSync(path.join(dest, name), { recursive: true, force: true });
+      note(`removed ${rel(path.join(dest, name))} (no longer in the kit)`);
+    }
+  }
+  write(lockFile, JSON.stringify({ note: 'Folders installed by frontend-ai-kit. Re-running the installer replaces them.', skills: installed }, null, 2) + '\n');
+  note(`${DRY ? 'will install' : 'installed'} ${installed.length} skills in ${rel(dest)}/`);
+}
+if (SKILLS_MODE === 'agents' || SKILLS_MODE === 'both') installSkills(path.join('.agents', 'skills'));
+if (SKILLS_MODE === 'claude' || SKILLS_MODE === 'both') installSkills(path.join('.claude', 'skills'));
+
+// 6. Check that every relative link in AGENTS.md resolves.
 const missing = [...agents.matchAll(/\]\(([^)#\s]+)\)/g)].map((m) => m[1])
   .filter((l) => !/^[a-z]+:/i.test(l))
   .filter((l) => !fs.existsSync(path.join(target, l)) && !(DRY && l.startsWith('docs/agents/')));
@@ -111,6 +157,7 @@ const missing = [...agents.matchAll(/\]\(([^)#\s]+)\)/g)].map((m) => m[1])
 console.log(`Frontend AI Kit -> ${target}${DRY ? '  (dry run, nothing written)' : ''}`);
 for (const l of log) console.log(`  - ${l}`);
 console.log(missing.length ? `  ! broken links in AGENTS.md: ${missing.join(', ')}` : '  - all AGENTS.md links resolve');
-console.log('\nNext: review AGENTS.md (fill in the description if it is a placeholder), then commit AGENTS.md, CLAUDE.md and docs/agents/.');
+console.log('\nNext: review AGENTS.md (fill in the description if it is a placeholder), then commit AGENTS.md, CLAUDE.md, docs/agents/ and the skills folder.');
+if (SKILLS_MODE === 'claude' || SKILLS_MODE === 'both') console.log('Claude Code: if the frontend-ai-kit plugin is also enabled here, each skill shows twice. Use the plugin or --skills=claude, not both.');
 if (log.some((l) => l.includes('(symlink)'))) console.log('Windows teammates: a committed CLAUDE.md symlink needs `git config core.symlinks true` (and Developer Mode); otherwise re-run with --claude=import.');
 if (missing.length) process.exitCode = 1;
