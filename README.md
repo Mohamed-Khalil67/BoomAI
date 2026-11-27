@@ -107,6 +107,61 @@ Every loaded skill's name and description is sent with each request, so install 
 
 On Windows, a committed `CLAUDE.md` symlink only works with `git config core.symlinks true` and Developer Mode; otherwise use `--claude=import`. In a monorepo, a nested `AGENTS.md` in a package folder adds rules for that package.
 
-## Repository layout
+## Architecture (read this first if you are an AI model working on this repo)
 
-See [AGENTS.md](AGENTS.md) for the map of this repo and [docs/MAINTAINING.md](docs/MAINTAINING.md) for adding skills or packs. The repo is public, but no licence is set for its own content yet, so others may read and install it but have no rights to reuse it. The vendored skills keep their own licences (see the packs' `vendor.json`).
+BoomAI is a **content repo plus one installer**. Nothing here runs inside a project; `scripts/install.mjs` copies files from `packs/` into the user's project. Everything is discovered by scanning folders, so the structure below is the contract.
+
+```
+BoomAI/
+├── AGENTS.md               # map of THIS repo: links every pack, category index and SKILL.md
+├── README.md               # install guide + this architecture section
+├── package.json            # npx entry: "bin" -> scripts/install.mjs
+├── scripts/install.mjs     # the only code; finds packs and skills by scanning folders
+├── docs/MAINTAINING.md     # step-by-step checklists (add skill / category / pack, vendor, release)
+├── evals/                  # manual test scenarios
+└── packs/
+    ├── common/             # installed with EVERY pack; no skills, no pack-specific content
+    │   └── docs/agents/    #   delivery.md, typescript.md
+    ├── frontend/           # Angular pack, self-contained
+    │   ├── AGENTS.md       #   block copied into the project's AGENTS.md (<= ~40 lines)
+    │   ├── docs/agents/    #   topic rules: angular.md, accessibility.md
+    │   ├── skills/
+    │   │   ├── AGENTS.md   #   map of this pack's categories
+    │   │   └── <category>/ #   angular, typescript, styling, motion, design-to-code, quality, habits
+    │   │       ├── AGENTS.md          # index of the skills in the category
+    │   │       └── <skill>/SKILL.md   # one skill per folder (+ optional references/)
+    │   ├── mcp.json        #   MCP servers added with --mcp (onlyWith limits by dependency)
+    │   └── vendor.json     #   third-party skills: repo, path, pinned commit, licence, local changes
+    └── backend/            # NestJS pack, same shape: nestjs, api, database, security, testing
+```
+
+### Rules that keep the packs separate
+1. **A pack contains everything it needs and references nothing outside itself.** Frontend files never mention backend topics and vice versa; shared material lives in `packs/common/`. Relative links inside a pack stay inside the pack (docs link to sibling docs because the installer puts them in one folder).
+2. **A skill is `packs/<pack>/skills/<category>/<skill>/SKILL.md`**, exactly three levels below `skills/`. The folder name equals the `name:` in the frontmatter. **Skill names are unique across all packs**, because the installer flattens them to `<project>/.agents/skills/<skill>/` and `.claude/skills/<skill>/`.
+3. **The category is only for organisation in this repo.** It disappears on install; the project gets flat skill folders. Each category folder has an `AGENTS.md` index that links its skills.
+4. **The pack's `AGENTS.md` is sent with every request in the project**, so it stays short and only links to docs and `SKILL.md` files. Skill links are written as `skills/<category>/<skill>/SKILL.md`; the installer rewrites them to the project's skill folder.
+5. **Only the installer is code.** Skills, docs and MCP definitions are Markdown or JSON. No skill may rely on a path outside its own folder.
+
+### What the installer does (so you can predict the result)
+1. Reads the pack names from the folders in `packs/` (everything except `common`). `--list` prints them with their skills.
+2. Writes one block per installed pack into the project's `AGENTS.md`, between `<!-- ai-skills:<pack>:start -->` and `<!-- ai-skills:<pack>:end -->`; the user's own text is kept.
+3. Copies `packs/common/docs/agents/` and the pack's `docs/agents/` into the project's `docs/agents/`. A file the user wrote is never overwritten; only files starting with `<!-- ai-skills: managed file.` are updated.
+4. Flattens the pack's skills into `.agents/skills/` and `.claude/skills/` and records them per pack in `.ai-skills.json`. Re-running replaces only what the lock lists, removes skills a pack dropped, and never touches other packs or the user's own skills.
+5. With `--mcp`, merges the pack's `mcp.json` into the project's `.mcp.json`, keeping servers the user already has.
+6. Points `CLAUDE.md` (and `GEMINI.md` with `--gemini`) at `AGENTS.md`, then checks every link in `AGENTS.md` resolves.
+
+### Where does new work go?
+| You want to... | Do this |
+|---|---|
+| Add a skill to an existing category | Create `packs/<pack>/skills/<category>/<skill>/SKILL.md`; add a row to the category `AGENTS.md`, the pack's `skills/AGENTS.md`, the skill line in `packs/<pack>/AGENTS.md`, the root `AGENTS.md` and this README. No code change |
+| Add a category | Create `packs/<pack>/skills/<new-category>/` with a skill and an `AGENTS.md` index; add it to the pack's `skills/AGENTS.md` map. No code change |
+| Add a pack (mobile, devops, ...) | Create `packs/<name>/` with `AGENTS.md` and `skills/`, optionally `docs/agents/`, `mcp.json`, `vendor.json`. `--list`, the guided questions and `npx ... <name>` pick it up. No code change |
+| Add a shared rule used by every pack | `packs/common/docs/agents/` |
+| Add a third-party skill | Copy it at a pinned commit, keep its licence, record it in the pack's `vendor.json` (see [docs/MAINTAINING.md](docs/MAINTAINING.md)) |
+
+This was tested by adding a `queues` category to backend and a whole `mobile` pack: both appeared in `--list`, installed by name, and installing another pack afterwards kept them.
+
+Step-by-step checklists: [docs/MAINTAINING.md](docs/MAINTAINING.md). Repo map with every link: [AGENTS.md](AGENTS.md).
+
+## Licence
+The repo is public, but no licence is set for its own content yet, so others may read and install it but have no rights to reuse it. The vendored skills keep their own licences (see the packs' `vendor.json`).
