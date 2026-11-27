@@ -4,7 +4,7 @@ Agent skills, house rules and MCP servers for **frontend (Angular)** and **backe
 
 ## Install
 
-Run in the project root (Node 18+ and Git; reading the repo needs GitHub access to it):
+Run in the project root (Node 18+ and Git; nothing else to install):
 
 ```bash
 npx -y github:Mohamed-Khalil67/ai-skills-by-mk frontend --mcp
@@ -97,4 +97,4 @@ On Windows, a committed `CLAUDE.md` symlink only works with `git config core.sym
 
 ## Repository layout
 
-See [AGENTS.md](AGENTS.md) for the map of this repo and [docs/MAINTAINING.md](docs/MAINTAINING.md) for adding skills or packs. No licence is set for the repo itself yet; add one before making it public.
+See [AGENTS.md](AGENTS.md) for the map of this repo and [docs/MAINTAINING.md](docs/MAINTAINING.md) for adding skills or packs. The repo is public, but no licence is set for its own content yet, so others may read and install it but have no rights to reuse it. The vendored skills keep their own licences (see `packs/backend/vendor.json`).
